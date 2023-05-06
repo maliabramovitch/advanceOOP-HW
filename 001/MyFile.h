@@ -8,6 +8,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <utility>
+#include <string>
 
 class MyFile {
 
@@ -17,73 +19,64 @@ class MyFile {
         int count;
         std::string fileName;
         std::string data;
-        size_t fileSize;
+        int fileSize;
 
         // methods
-        explicit RC(std::string &name); //required copy C'tor for T.
+        explicit RC(const std::string &name); //required copy C'tor for T.
         void operator++();
-
         void operator--();
     };
-
+    std::string name;
     RC *fileRC;
-
-    void open() const;
-
     void writeToFile();
 
 public:
-    //Exception classes
-    class IndexOutOfRange : public std::exception {
+    class IndexOutOfRange : public std::exception{
         std::string message;
     public:
-        explicit IndexOutOfRange(const std::string &message) : message(message) {};
+        explicit IndexOutOfRange(std::string message) : message(std::move(message)) {};
 
         const char *what() const noexcept override {
             return message.c_str();
         };
     };
 
-    class OpenFileException : public std::exception {
+    class OpenFileException : public std::exception{
         std::string message;
     public:
-        explicit OpenFileException(const std::string &message) : message(message) {};
-
-        const char *what() const noexcept override {
+        explicit OpenFileException(std::string message) : message(std::move(message)) {};
+        const char * what() const noexcept override {
             return message.c_str();
         }
     };
 
     explicit MyFile();
 
-    explicit MyFile(std::string name);
+    explicit MyFile(const std::string& name);
 
     MyFile(const MyFile &other);
 
-    MyFile(MyFile &&) = delete;
+    MyFile(MyFile &&) noexcept ;
 
     ~MyFile();
 
     MyFile &operator=(const MyFile &other);
 
-    char operator=(MyFile &&) = delete;
+    MyFile& operator=(MyFile &&other) noexcept(false) ;
 
     char &operator[](int offSet) noexcept(false);
 
     const char &operator[](int offSet) const noexcept(false);
 
-    void wc() const noexcept(false); //the function is const but There may have been a call to writeToFile()
+    void wc() const noexcept(false);
 
-    void cat() const noexcept(false); //the function is const but There may have been a call to writeToFile()
+    void cat() const noexcept(false);
 
     void operator++();
 
     void operator--();
 
-    int getRcCount() const; //RC count
-    size_t getDataSize() const; //text size
-    void clear(); //clears the file
-    MyFile &copyToMyFile(MyFile &other) const;
+    int getRcCount() const;
 
     MyFile &operator>>(MyFile &other) const;
 
@@ -91,7 +84,13 @@ public:
 
     bool operator<(const MyFile &other) const;
 
-    const std::string &getFileName() const;
+    const std::string &getRCFileName() const;
+
+    const std::string &getMyFileName() const;
+
+    void touch();
+    bool operator ==(const MyFile& other) const;
+    bool operator ==(const std::string &fileName) const;
 };
 
 #endif //INC_001_MYFILE_H

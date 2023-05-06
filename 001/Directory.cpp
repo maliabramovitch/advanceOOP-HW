@@ -4,17 +4,19 @@
 
 #include "Directory.h"
 
+#include <utility>
+
 using namespace std;
 
-Directory::DirectoryAlreadyExistException::DirectoryAlreadyExistException(const std::string& message) : message(message){}
+Directory::DirectoryAlreadyExistException::DirectoryAlreadyExistException(std::string  message) : message(std::move(message)){}
 
 const char *Directory::DirectoryAlreadyExistException::what() const noexcept {
     return message.c_str();
 }
 
-Directory::Directory(const std::string& dirName, Directory *parent) : parent(parent), name(dirName){
+Directory::Directory(const std::string& dirName, Directory *parent) :name(dirName),  parent(parent){
     if (parent) {
-        fullName = parent->name + "/" + dirName;
+        fullName = parent->fullName + "/" + dirName;
     } else {
         fullName = dirName;
     }
@@ -29,26 +31,11 @@ Directory::Directory(const Directory &other){
     inFiles = other.inFiles;
 }
 
-void Directory::mkdir(const std::string& dirName) throw(DirectoryAlreadyExistException) {
+void Directory::mkdir(const std::string& dirName) noexcept(false) {
     for (const Directory& dir : inDirectories) {
-        if (dir.name == dirName) throw DirectoryAlreadyExistException((string &) "Directory already exist");
+        if (dir.name == dirName) throw DirectoryAlreadyExistException("Directory already exist");
     }
     inDirectories.insert(Directory(dirName, this));
-}
-
-
-void Directory::mkdir(Directory &newDir) throw(DirectoryAlreadyExistException) {
-    if (&newDir == this) throw DirectoryAlreadyExistException("Illegal mkdir operation");
-    for (const Directory& dir : inDirectories) {
-        if (dir.name == newDir.name) throw DirectoryAlreadyExistException((string &) "Directory already exist");
-    }
-    inDirectories.insert(newDir);
-}
-
-
-void Directory::clearDirectory() {
-    inDirectories.clear();
-    inFiles.clear();
 }
 
 std::string Directory::getName() const {
@@ -59,11 +46,11 @@ std::string Directory::getFullName() const {
     return fullName;
 }
 
-std::set<Directory> &Directory::getInDirectories() {
+std::set<Directory> &Directory::getInDirectories(){
     return inDirectories;
 }
 
-std::set<MyFile> &Directory::getInFiles() {
+std::set<MyFile> &Directory::getInFiles(){
     return inFiles;
 }
 
@@ -72,12 +59,9 @@ const Directory *Directory::getPatent() const {
 }
 
 void Directory::printContent() const {
-    cout << name << ":" << endl;
+    cout << fullName << "/:" << endl;
     for (const MyFile& mf : inFiles) {
-        cout << '\t' << mf.getFileName() << '\t' << mf.getRcCount() << endl;
-    }
-    for (const Directory& dir : inDirectories) {
-        cout << '\t' << dir.name << endl;
+        cout << '\t' << mf.getMyFileName() << '\t' << mf.getRcCount() << endl;
     }
     if (inDirectories.empty()) return;
     for (const Directory& dir : inDirectories) {
@@ -89,7 +73,7 @@ void Directory::printContent() const {
 
 void Directory::printInDirectories() const {
     for (const Directory& dir : inDirectories) {
-        dir.printContent();
+        cout << '\t' << dir.getName() << endl;
     }
 }
 
@@ -97,7 +81,7 @@ void Directory::printInDirectories() const {
 
 void Directory::printInFiles() const {
     for (const MyFile& mf: inFiles) {
-        cout << mf.getFileName() << '\t' << mf.getRcCount() << endl;
+        cout << '\t' << mf.getMyFileName() << '\t' << mf.getRcCount() << endl;
     }
 }
 
@@ -108,4 +92,20 @@ bool Directory::operator<(const Directory &other) const{
 
 std::ostream &operator<<(ostream &os, Directory &dir) {
     return os << dir.fullName << endl;
+}
+
+bool Directory::operator==(const std::string& dirName) const {
+    return dirName == name;
+}
+
+bool Directory::operator==(const Directory &d) const {
+    return d.name == name;
+}
+
+bool Directory::operator!=(const string &dirName) const {
+    return dirName != name;
+}
+
+bool Directory::operator!=(const Directory &d) const {
+    return d.name != name;
 }

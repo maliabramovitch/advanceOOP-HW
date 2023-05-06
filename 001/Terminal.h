@@ -12,7 +12,7 @@
 #include <map>
 
 class Terminal {
-    //VirtualDrive vd;
+    VirtualDrive vd;
     std::map<std::string, int> commands;
 
     int getAndCheckInput(std::string &input, int &operation); //Receives input from the user and acts accordingly.
@@ -20,16 +20,16 @@ class Terminal {
     void fillCommends();
 
 
+
 public:
-    Terminal();
+    explicit Terminal();
     ~Terminal() = default;
     Terminal(const Terminal &) = delete;
     Terminal(Terminal &&) = delete;
     Terminal &operator=(const Terminal &) = delete;
     Terminal &operator=(Terminal &&) = delete;
-
     static void printMenu() ;
-    void run(); //Receives input from the user and acts accordingly.
+    void run(); //you know what run means...
 
 };
 

@@ -14,27 +14,24 @@
 class Directory {
     std::string fullName;
     std::string name;
-    const Directory* parent; //you can't switch your parents!!!
+    Directory* parent;
     std::set<Directory> inDirectories;
     std::set<MyFile> inFiles;
 
+
 public:
-    class DirectoryAlreadyExistException : public std::exception {
+    class DirectoryAlreadyExistException : public std::exception{
         std::string message;
     public:
-        explicit DirectoryAlreadyExistException(const std::string& message);
+        explicit DirectoryAlreadyExistException(std::string  message);
         const char * what() const noexcept override;
     };
     explicit Directory(const std::string& dirName, Directory* parent=nullptr);
     Directory(const Directory&);
-    Directory(Directory&&) = default;
     Directory& operator=(const Directory&) const = delete;
     Directory& operator=(Directory&&) = delete;
 
-    void mkdir(const std::string& dirName) throw(DirectoryAlreadyExistException);
-    void mkdir(Directory& newDir) throw(DirectoryAlreadyExistException);
-    void clearDirectory();
-
+    void mkdir(const std::string& dirName) noexcept(false);
     std::string getName() const;
     std::string getFullName() const;
     std::set<Directory>& getInDirectories();
@@ -45,7 +42,10 @@ public:
     void printInFiles() const;
     bool operator<(const Directory& other) const;
     friend std::ostream& operator<<(std::ostream& os, Directory& dir);
-
+    bool operator==(const std::string& dirName) const;
+    bool operator==(const Directory& d) const;
+    bool operator!=(const std::string& dirName) const;
+    bool operator!=(const Directory& d) const;
 
 };
 

@@ -9,7 +9,21 @@
 
 using namespace std;
 
-MyFile::RC::RC(string &name) : count(1), fileName(name), fileSize(0) { ; }
+MyFile::RC::RC(const string &name) : count(1), fileName(name), fileSize(0) {
+    file.open(fileName, ios_base::app);
+    file.close();
+    file.open(fileName);
+    if (!file) {
+        throw (OpenFileException("File was not opened"));
+    }
+    file.seekg(0, ios::beg);
+    stringstream buffer;
+    buffer << file.rdbuf();
+    data = buffer.str();
+    fileSize = data.length();
+    file.close();
+}
+
 
 void MyFile::RC::operator++() {
     ++count;
@@ -20,53 +34,52 @@ void MyFile::RC::operator--() {
 }
 
 void MyFile::writeToFile() {
-    if (fileRC->data.size() == 0) {
-        ::FILE* f = fopen(fileRC->fileName.c_str(), "w");
-        ::fclose(f);
+    fileRC->file.open(fileRC->fileName);
+    if (!fileRC->file) {
+        throw (OpenFileException("File was not opened"));
     }
-    else {
-        open();
-        while (!fileRC->file) {
-            open();
-        }
-        fileRC->file.seekp(0, ios::beg);
-        string::iterator start(fileRC->data.begin()), end(fileRC->data.end());
-        ostreambuf_iterator<char> out(fileRC->file);
-        copy(start, end, out);
-    }
-
+    fileRC->file.seekp(0, ios::beg);
+    string::iterator start(fileRC->data.begin()), end(fileRC->data.end());
+    ostreambuf_iterator<char> out(fileRC->file);
+    copy(start, end, out);
+    fileRC->file.close();
 }
 
 
-MyFile::MyFile() : fileRC(nullptr){}
+MyFile::MyFile() : fileRC(nullptr) {}
 
-MyFile::MyFile(std::string name) : fileRC(new RC(name)) {
-    open();
-    stringstream buffer;
-    buffer << fileRC->file.rdbuf();
-    fileRC->data = buffer.str();
-    fileRC->fileSize = fileRC->data.length();
-}
+MyFile::MyFile(const std::string &name) : name(name), fileRC(new RC(name)) {}
 
 MyFile::MyFile(const MyFile &other) {
     fileRC = other.fileRC;
+    name = other.name;
+    ++(*fileRC);
 }
 
 MyFile::~MyFile() {
-    writeToFile();
     if (fileRC->count > 1) {
         --(*fileRC);
     } else {
+        writeToFile();
         delete fileRC;
     }
 
+}
+
+
+MyFile::MyFile(MyFile &&other) noexcept {
+    fileRC = other.fileRC;
+    other.fileRC = nullptr;
+    name = std::move(other.name);
+    other.fileRC = nullptr;
+    other.name = "";
 }
 
 MyFile &MyFile::operator=(const MyFile &other) {
     if (this == &other) return *this;
     if (fileRC && fileRC->count == 1) {
         delete fileRC;
-    } else if (fileRC && fileRC->count > 1){// if (fileRC.count > 1)
+    } else if (fileRC && fileRC->count > 1) {// if (fileRC.count > 1)
         --(*fileRC);
     }
     fileRC = other.fileRC;
@@ -74,13 +87,35 @@ MyFile &MyFile::operator=(const MyFile &other) {
     return *this;
 }
 
+
+MyFile &MyFile::operator=(MyFile &&other) noexcept(false) {
+    if (this != &other) {
+        fileRC = other.fileRC;
+        other.fileRC = nullptr;
+        name = other.name;
+        other.fileRC = nullptr;
+        other.name = "";
+    }
+    return *this;
+}
+
 const char &MyFile::operator[](int offSet) const noexcept(false) {
-    if (offSet > fileRC->fileSize || offSet < 0) throw IndexOutOfRange("Index Out Of Range");
+    fileRC->fileSize = fileRC->data.size();
+    if (offSet > fileRC->fileSize || offSet < 0) {
+        stringstream ss;
+        ss << "Index " << offSet << " is out of range!";
+        throw IndexOutOfRange(ss.str());
+    }
     return fileRC->data[offSet];
 }
 
 char &MyFile::operator[](int offSet) {
-    if (offSet > fileRC->fileSize || offSet < 0) throw IndexOutOfRange("Index Out Of Range");
+    fileRC->fileSize = fileRC->data.size();
+    if (offSet > fileRC->fileSize || offSet < 0) {
+        stringstream ss;
+        ss << "Index " << offSet << " is out of range!";
+        throw IndexOutOfRange(ss.str());
+    }
     if (offSet == fileRC->fileSize) fileRC->data.insert(fileRC->data.end(), ' ');
     return fileRC->data[offSet];
 }
@@ -91,7 +126,7 @@ void MyFile::wc() const { //the function is const but There may have been a call
     int lines = 0;
     bool flag = false;
     string::iterator start(fileRC->data.begin()), end(fileRC->data.end());
-    while (1) {
+    while (true) {
         if ((::isalnum(*start) || ispunct(*start)) && (start != end)) {
             flag = true;
             ++chars;
@@ -108,7 +143,7 @@ void MyFile::wc() const { //the function is const but There may have been a call
             ++words;
             flag = true;
         }
-        if (*start == '\n', *start == '\r') {
+        if (*start == '\n' || *start == '\r') {
             if (flag) {
                 ++lines;
                 ++words;
@@ -141,25 +176,8 @@ std::ostream &operator<<(std::ostream &os, const MyFile &mf) {
     return os;
 }
 
-void MyFile::open() const {
-    fileRC->file.open(fileRC->fileName, ios::app);
-    fileRC->file.close();
-    fileRC->file.open(fileRC->fileName);
-    if (!fileRC->file) {
-        throw OpenFileException("file was not opened\n");
-    }
-}
-
 int MyFile::getRcCount() const {
     return fileRC->count;
-}
-
-size_t MyFile::getDataSize() const {
-    return fileRC->fileSize;
-}
-
-void MyFile::clear() {
-    fileRC->data.clear();
 }
 
 MyFile &MyFile::operator>>(MyFile &other) const {
@@ -167,17 +185,36 @@ MyFile &MyFile::operator>>(MyFile &other) const {
     return other;
 }
 
-MyFile &MyFile::copyToMyFile(MyFile &other) const {
-    return *this >> other;
-}
-
 bool MyFile::operator<(const MyFile &other) const {
-    return fileRC->fileName < other.fileRC->fileName;
+    return name < other.name;
 }
 
-const std::string& MyFile::getFileName() const {
+const std::string &MyFile::getRCFileName() const {
     return fileRC->fileName;
 }
+
+const std::string &MyFile::getMyFileName() const {
+    return name;
+}
+
+
+void MyFile::touch() {
+    fileRC->file.open(fileRC->fileName);
+    if (!fileRC->file) {
+        throw (OpenFileException("File was not opened"));
+    }
+    fileRC->file.flush();
+    fileRC->file.close();
+}
+
+bool MyFile::operator==(const MyFile &other) const {
+    return name == other.name;
+}
+
+bool MyFile::operator==(const string &fileName) const {
+    return name == fileName;
+}
+
 
 
 
