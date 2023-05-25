@@ -33,7 +33,7 @@ unsigned int howLongBetween(const Time &start, const Time &end) {
     unsigned int hours = (end.hour.hour - start.hour.hour) * 60,
             minutes = (end.hour.minutes - start.hour.minutes), days;
     if (start.date.month == end.date.month) {
-        days = (end.date.day - start.date.day) * 24 * 60;
+        days = (end.date.day - start.date.day);
     } else { // not the same month
         for (unsigned int i = (start.date.month + 1) % 12; i != end.date.month; ((++i) % 12)) {
             days += end.monthsDays.at(i);
