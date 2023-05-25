@@ -7,11 +7,7 @@
 using namespace std;
 int main() {
     Time start("07/01", "17:01");
-<<<<<<< HEAD
     Time end("11/01 ", "16:18");
-=======
-    Time end("11/11 ", "16:18");
->>>>>>> 741e886425c110aa6ccd46bd0131ac5a04eae2d4
     cout << start << end << endl;
     unsigned int m = howLongBetween(start,end);
     cout << m << endl;
