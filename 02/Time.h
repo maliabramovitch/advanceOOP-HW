@@ -32,11 +32,15 @@ class Time {
     static void fixStr(std::string& date);
 
 public:
+    /**
+     * @param d "dd/mm"
+     * @param h "HH/MM'
+     */
     Time(std::string d, std::string h);
     ~Time() = default;
-    Time(const Time&) = default;
+    Time(const Time&) = delete;
     Time(Time&&) = delete;
-    Time& operator=(const Time&) = default;
+    Time& operator=(const Time&) = delete;
     Time& operator=(Time&&) = delete;
 
     friend unsigned int howLongBetween(const Time &start, const Time &end);
