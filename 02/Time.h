@@ -15,7 +15,7 @@ class Time {
         unsigned int day{};
         unsigned int month{};
 
-        explicit Date(std::string &date);
+        explicit Date(std::string &d);
     };
 
     struct Hour {

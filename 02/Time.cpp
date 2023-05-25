@@ -7,10 +7,10 @@
 
 using namespace std;
 
-Time::Date::Date(std::string &date) {
+Time::Date::Date(std::string &d) {
     std::stringstream ss;
-    fixStr(date);
-    ss << date;
+    fixStr(d);
+    ss << d;
     ss >> day;
     ss >> month;
 }
