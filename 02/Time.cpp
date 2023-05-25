@@ -32,7 +32,7 @@ unsigned int howLongBetween(const Time &start, const Time &end) {
     unsigned int hours = (end.hour.hour - start.hour.hour) * 60,
             minutes = (end.hour.minutes - start.hour.minutes), days;
     if (start.date.month == end.date.month) {
-        days = (end.date.day - start.date.day)* 24 * 60;
+        days = (end.date.day - start.date.day) * 24 * 60;
     } else { // not the same month
         for (unsigned int i = (start.date.month + 1) % 12; i != end.date.month; ((++i) % 12)) {
             days += end.monthsDays.at(i);
@@ -41,7 +41,7 @@ unsigned int howLongBetween(const Time &start, const Time &end) {
         days += end.date.day;
         days *= 24 * 60;
     }
-    return days  + hours + minutes;
+    return days + hours + minutes;
 }
 
 std::ostream &operator<<(std::ostream &os, const Time &t) {
@@ -76,4 +76,30 @@ void Time::fixStr(string &d) {
     for (char &s: d) {
         if (!isdigit(s)) s = ' ';
     }
+}
+
+bool Time::operator==(const Time &other) const {
+    return date.month == other.date.month && date.day == other.date.day && hour.hour == other.hour.hour &&
+           hour.minutes == other.hour.minutes;
+}
+
+bool Time::operator!=(const Time &other) const {
+    return !operator==(other);
+}
+
+bool Time::operator<(const Time &other) const {
+    if (date.month < other.date.month) {
+        if (date.day < other.date.day) {
+            if (hour.hour < other.hour.hour) {
+                if (hour.minutes < other.hour.minutes) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+bool Time::operator>(const Time &other) const {
+    return !operator<(other);
 }

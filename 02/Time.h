@@ -43,6 +43,11 @@ public:
     Time& operator=(const Time&) = delete;
     Time& operator=(Time&&) = delete;
 
+    bool operator==(const Time& other) const;
+    bool operator!=(const Time& other) const;
+    bool operator<(const Time& other) const;
+    bool operator>(const Time& other) const;
+
     friend unsigned int howLongBetween(const Time &start, const Time &end);
     friend std::ostream& operator<<(std::ostream& os, const Time& t);
 };
