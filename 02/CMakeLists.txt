@@ -3,4 +3,4 @@ project(02)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(02 main.cpp DirectedGraph.h Time.h Time.cpp)
+add_executable(02 main.cpp DirectedGraph.h Time.h Time.cpp BoogieLever.cpp BoogieLever.h BoogieLever.h Ship.cpp Ship.h Terminal.cpp Terminal.h Terminal.h)
