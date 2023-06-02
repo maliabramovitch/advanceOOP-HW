@@ -71,7 +71,7 @@ void BoogieLever::load(const std::string &fileName) {
         cout << "Update was successful.\n";
     }
     catch (exception &e) {
-        cerr << e.what();
+        cerr << e.what() << endl;
     }
 }
 

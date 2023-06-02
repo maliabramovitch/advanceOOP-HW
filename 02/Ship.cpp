@@ -156,6 +156,9 @@ Ship::DockingPort::DockingPort(const string &fileName, const std::string &line, 
     portName = args[0];
     arrival = Time(args[1]);
     departure = Time(args[3]);
+    if (howLongBetween(arrival, departure) < 0) {
+        throw Time::TimeException("arrival time > departure time");
+    }
     containersUnloaded = stoi(args[2]);
 }
 
@@ -173,10 +176,9 @@ std::ostream &Ship::DockingPort::printDockingPort(ostream &os) const {
  * Ship
  */
 Ship::Ship(const std::string &fileName) try: fileName(fileName), origin(fileName) {
+    unsigned int lineNum = 2;
     try {
-
         containersLoaded = 0;
-        unsigned int lineNum = 2;
         fstream file(fileName);
         if (!file) {
             stringstream ss;
@@ -187,18 +189,23 @@ Ship::Ship(const std::string &fileName) try: fileName(fileName), origin(fileName
         getline(file, line);
         while ((getline(file, line)) || !file.eof()) {
             dockPorts.emplace_back(fileName, line, lineNum);
-            if (origin.departure > dockPorts[dockPorts.size() - 1].arrival) {
+            if (origin.departure > dockPorts[dockPorts.size() - 1].arrival ||
+                (dockPorts.size() > 1 &&
+                 dockPorts[dockPorts.size() - 1].arrival < dockPorts[dockPorts.size() - 2].departure)) {
                 stringstream ss;
                 ss << "Invalid input in file " << fileName << " at line " << lineNum;
                 throw DockingPort::DockingPortException(ss.str());
             }
-
             containersLoaded += dockPorts[dockPorts.size() - 1].containersUnloaded;
             ++lineNum;
+
         }
+        //checkTimeChronology();
     }
     catch (exception &e) {
-        throw;
+        stringstream ss;
+        ss << "Invalid input in file " << fileName << " at line " << lineNum;
+        throw Ship::OriginPort::OriginPortException(ss.str());
     }
 
 }
@@ -243,5 +250,21 @@ std::ostream &operator<<(ostream &os, const Ship &ship) {
         os << endl;
     }
     return os;
+}
+
+void Ship::checkTimeChronology() {
+    try {
+        if (howLongBetween(origin.departure, dockPorts[0].arrival) < 0) {
+            throw Time::TimeException("Departure time of Origin Port > Arrival time of 1st Docking Port");
+        }
+        for (int i = 1; i < dockPorts.size(); ++i) {
+            if (howLongBetween(dockPorts[i - 1].departure, dockPorts[i].arrival) < 0) {
+                throw Time::TimeException("Departure time of Docking Port > Arrival time of next Docking Port");
+            }
+        }
+    }
+    catch (exception &e) {
+        throw;
+    }
 }
 /***/

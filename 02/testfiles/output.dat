@@ -1,0 +1,93 @@
+Tuen Mun:  Singapore(134), Mumbai(46), Suez(30), Ashdod(88)
+Singapore:
+Mumbai:
+Suez:
+Ashdod:
+
+Tuen Mun:  Singapore(9047)
+Singapore:  Mumbai(10050)
+Mumbai:  Suez(6645)
+Suez:  Ashdod(1380)
+Ashdod:
+
+
+Tuen Mun:  Singapore(134), Mumbai(46), Suez(30), Ashdod(88)
+Singapore:
+Mumbai:
+Suez:
+Ashdod:
+Tel Aviv:  Singapore(67), Suez(15), Tel Aviv(23), Haifa(44)
+Haifa:
+
+Tuen Mun:  Singapore(9047)
+Singapore:  Mumbai(10050), Tel Aviv(50430)
+Mumbai:  Suez(6645)
+Suez:  Ashdod(1380), Haifa(44700)
+Ashdod:
+Tel Aviv:  Singapore(53717), Suez(51285)
+Haifa:
+
+
+Invalid input in file EverGreen_3.dat at line 4
+Tuen Mun:  Singapore(134), Mumbai(46), Suez(30), Ashdod(88)
+Singapore:
+Mumbai:
+Suez:
+Ashdod:
+Tel Aviv:  Singapore(67), Suez(15), Tel Aviv(23), Haifa(44)
+Haifa:
+
+Tuen Mun:  Singapore(9047)
+Singapore:  Mumbai(10050), Tel Aviv(50430)
+Mumbai:  Suez(6645)
+Suez:  Ashdod(1380), Haifa(44700)
+Ashdod:
+Tel Aviv:  Singapore(53717), Suez(51285)
+Haifa:
+
+
+Invalid input in file EverGreen_4.dat at line 3
+Tuen Mun:  Singapore(134), Mumbai(46), Suez(30), Ashdod(88)
+Singapore:
+Mumbai:
+Suez:
+Ashdod:
+Tel Aviv:  Singapore(67), Suez(15), Tel Aviv(23), Haifa(44)
+Haifa:
+
+Tuen Mun:  Singapore(9047)
+Singapore:  Mumbai(10050), Tel Aviv(50430)
+Mumbai:  Suez(6645)
+Suez:  Ashdod(1380), Haifa(44700)
+Ashdod:
+Tel Aviv:  Singapore(53717), Suez(51285)
+Haifa:
+
+
+0
+-149
+-298
+67
+134
+Tuen Mun:  Singapore(134), Mumbai(46), Suez(30), Ashdod(88)
+Singapore:  Mumbai(23), Suez(15), Ashdod(44)
+Mumbai:
+Suez:
+Ashdod:
+Tel Aviv:  Singapore(67), Suez(15), Tel Aviv(23), Haifa(44)
+Haifa:
+
+Tuen Mun:  Singapore(9047)
+Singapore:  Mumbai(10558.5), Tel Aviv(50430)
+Mumbai:  Suez(6645)
+Suez:  Ashdod(1440), Haifa(44700)
+Ashdod:
+Tel Aviv:  Singapore(53717), Suez(51285)
+Haifa:
+
+
+0
+-149
+-298
+67
+52

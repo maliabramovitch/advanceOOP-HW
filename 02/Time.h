@@ -48,9 +48,7 @@ class Time {
      * <unsigned int- month, unsigned int- how many days in month>
      * for calculating the minutes between to different months
      */
-    std::map<unsigned int, unsigned int> monthsDays;
-
-    void initMonthsDays();
+    int monthsDays[13] = {0,1,2,3,4,5,6,7,8,9,10,11,12};
 
     /**
      * fixing the input for initialization
@@ -121,7 +119,7 @@ public:
      * @param end
      * @return
      */
-    friend unsigned int howLongBetween(const Time &start, const Time &end);
+    friend unsigned int howLongBetween(const Time &start, const Time &end) ;
 
     /**
      * printing Time.

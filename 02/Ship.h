@@ -64,6 +64,8 @@ class Ship {
     std::deque<DockingPort> dockPorts;
     unsigned int containersLoaded; /// The sum of the containers unloaded during the entire sailing route.
 
+    void checkTimeChronology();
+
 public:
     explicit Ship(const std::string &fileName) noexcept(false);
 

@@ -1,0 +1,20 @@
+print
+load EverGreen_2.dat
+print
+load EverGreen_3.dat
+print
+load EverGreen_4.dat
+print
+Tuen Mun,balance,05/01 10:00
+Tuen Mun,balance,05/01 10:01
+Tuen Mun,balance,10/01 10:00
+Singapore,balance,11/01 16:18
+Singapore,balance,15/01 16:18
+load EverGreen_5.dat
+print
+Tuen Mun,balance,05/01 10:00
+Tuen Mun,balance,05/01 10:01
+Tuen Mun,balance,10/01 10:00
+Singapore,balance,11/01 16:18
+Singapore,balance,15/01 16:18
+exit

@@ -37,7 +37,7 @@ Time::Date::Date(std::string &date) {
  * Hour
  */
 
-Time::Hour::Hour() : hour(0), minutes(0){}
+Time::Hour::Hour() : hour(0), minutes(0) {}
 
 Time::Hour::Hour(std::string &time) {
     std::stringstream ss;
@@ -58,7 +58,6 @@ Time::Hour::Hour(std::string &time) {
  * Time
  */
 Time::Time(std::string d, std::string h) : date(d), hour(h) {
-    initMonthsDays();
 }
 
 
@@ -107,15 +106,18 @@ Time &Time::operator=(Time &&other) noexcept {
 }
 
 unsigned int howLongBetween(const Time &start, const Time &end) {
+    if (start.date.month > end.date.month) {
+        throw Time::TimeException("start month > end month");
+    }
     unsigned int hours = (end.hour.hour - start.hour.hour) * 60,
             minutes = (end.hour.minutes - start.hour.minutes), days;
     if (start.date.month == end.date.month) {
         days = (end.date.day - start.date.day) * 24 * 60;
     } else { // not the same month
-        for (unsigned int i = (start.date.month + 1) % 12; i != end.date.month; ++i) {
-            days += end.monthsDays.at(i);
+        for (unsigned int i = (start.date.month + 1); i != end.date.month; ++i) {
+            days += end.monthsDays[i];
         }
-        days += start.monthsDays.at(start.date.month) - start.date.day;
+        days += start.monthsDays[start.date.month] - start.date.day;
         days += end.date.day;
         days *= 24 * 60;
     }
@@ -133,21 +135,6 @@ std::ostream &operator<<(std::ostream &os, const Time &t) {
     if (t.hour.minutes < 10) os << '0';
     os << t.hour.minutes;
     return os;
-}
-
-void Time::initMonthsDays() {
-    monthsDays[1] = 31;
-    monthsDays[2] = 28;
-    monthsDays[3] = 31;
-    monthsDays[4] = 30;
-    monthsDays[5] = 31;
-    monthsDays[6] = 30;
-    monthsDays[7] = 31;
-    monthsDays[8] = 31;
-    monthsDays[9] = 30;
-    monthsDays[10] = 31;
-    monthsDays[11] = 30;
-    monthsDays[12] = 31;
 }
 
 void Time::fixStr(string &d) {
@@ -201,14 +188,14 @@ void Time::checkTimeFormat(const string &time) {
     ss >> dateStr;
     ss >> hourStr;
     if (dateStr.size() != 5 || hourStr.size() != 5) {
-        throw TimeException("illigle time format");
+        throw TimeException("illegible time format");
     }
     for (int i = 0; i < 5; ++i) {
         if ((isdigit(dateStr[i]) && !isdigit(hourStr[i])) || (!isdigit(dateStr[i]) && isdigit(hourStr[i]))) {
-            throw TimeException("illigle time format");
+            throw TimeException("illegible time format");
         }
         if ((dateStr[i] == '/' && hourStr[i] != ':') || (dateStr[i] != '/' && hourStr[i] == ':')) {
-            throw TimeException("illigle time format");
+            throw TimeException("illegible time format");
         }
     }
 }
