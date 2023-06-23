@@ -40,18 +40,18 @@ int main() {
     dynamic_pointer_cast<Thug>(adq[4].lock())->setCourse(180, 30); // Loki
     dynamic_pointer_cast<Thug>(adq[5].lock())->setCourse(270, 30); // Gog
     int c = 1;
-    for (int i = 0; i < adq.size(); ++i) {
-        adq[i].lock()->broadcastCurrentState();
+    for (const auto & i : adq) {
+        i.lock()->broadcastCurrentState();
     }
     while(c){
         cout << c <<endl;
-        for (int i = 0; i < sdq.size(); ++i) {
-            sdq[i].lock()->update();
-            sdq[i].lock()->broadcastCurrentState();
+        for (const auto & i : sdq) {
+            i.lock()->update();
+            i.lock()->broadcastCurrentState();
         }
-        for (int i = 0; i < adq.size(); ++i) {
-            adq[i].lock()->update();
-            adq[i].lock()->broadcastCurrentState();
+        for (const auto & i : adq) {
+            i.lock()->update();
+            i.lock()->broadcastCurrentState();
         }
         cout << endl;
         --c;
