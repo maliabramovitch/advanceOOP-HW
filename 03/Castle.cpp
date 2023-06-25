@@ -1,9 +1,8 @@
 //
 // Created by Mali Abramovitch on 16/06/2023.
 //
-
 #include "Model.h"
-#include "Castle.h"
+//#include "Castle.h"
 
 
 #include <utility>
@@ -27,6 +26,4 @@ void Castle::broadcastCurrentState() const {
     Structure::broadcastCurrentState();
 }
 
-int Castle::withdraw(int boxes) {
-    return 0;
-}
+int Castle::withdraw() {return 0;}

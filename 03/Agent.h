@@ -20,7 +20,7 @@ protected:
 
 public:
     Agent(const std::string &name, int speed, float x, float y, char role, int health) :
-    SimObject(name), MovingObject(speed,x ,y), role(role), health(health) {}
+            SimObject(name), MovingObject(speed, x, y), role(role), health(health) {}
 
     ~Agent() = default;
 
@@ -75,13 +75,36 @@ public:
 
     void setHealth(int newHealth) { health = newHealth; }
 
-    bool isAlive1() const { return isAlive; }
+    bool getIsAlive() const { return isAlive; }
 
     void setIsAlive(bool newIsAlive) { isAlive = newIsAlive; }
 
     void broadcastCurrentState() const override {
-        std::cout << std::fixed  << setprecision(2) << name << " at (" << currentX << ", " << currentY << "), ";
-    };
+        std::cout << std::fixed << setprecision(2) << name << " at (" << currentX << ", " << currentY << "), ";
+        if (!isAlive) {
+            cout << "Dead" << endl;
+        }
+        else if (stopped) {
+            cout << "Stopped" << endl;
+        }
+        else if (movement == POSITION) {
+            cout << "Heading to (" << getNewX() << ", " << getNewY() << "), ";
+            cout << "speed " << speed << " km/h" << endl;
+
+        } else if (movement == COURSE){
+            cout << "Heading on course " << course << " deg, speed 10.00 km/h" << endl;
+        }
+    }
+
+    Agent &operator++() {
+        ++health;
+        return *this;
+    }
+
+    Agent &operator--() {
+        --health;
+        return *this;
+    }
 };
 
 #endif //INC_03_AGENT_H

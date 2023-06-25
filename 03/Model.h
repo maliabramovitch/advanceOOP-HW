@@ -15,7 +15,6 @@
 #include "Structure.h"
 #include "Farm.h"
 #include "Castle.h"
-#include "Controller.h"
 #include "View.h"
 
 class Model { /** Singleton **/
@@ -27,16 +26,13 @@ private:
 
     friend class View;
 
-    friend class ModelDestroyer;
-
     /**
      * fields
      */
-    static shared_ptr<Model> instance; //singleton instance
+    static shared_ptr<Model> instance; //singleton instancePtr
     deque<shared_ptr<SimObject>> simObjects;
-    deque<weak_ptr<Agent>> agents;
-    deque<weak_ptr<Structure>> structures;
-    shared_ptr<Controller> controller;
+    deque<shared_ptr<Agent>> agents;
+    deque<shared_ptr<Structure>> structures;
     shared_ptr<View> view;
     unsigned int time;
     deque<string> args;
@@ -44,7 +40,7 @@ private:
     /**
      * private methods
      */
-    Model(const char *castlesFileName, const char *farmsFileName);
+    Model();
 
     void initCastles(const char *castlesFileName);
 
@@ -60,7 +56,7 @@ private:
 
     void initStructureArgs(const string &fileName, int i);
 
-    static void positionHelper(std::string &input, double &d1, double &d2);
+    static void positionHelper(std::string &input, double &d);
 
 
 public:
@@ -77,7 +73,7 @@ public:
 
     Model &operator=(Model &&) = delete;
 
-    static shared_ptr<Model> &getModelInstance(const char *castlesFileName, const char *farmsFileName);
+    static shared_ptr<Model> &getModelInstance();
 
     ~Model();
 
@@ -87,7 +83,34 @@ public:
 
     void go();
 
+    void show();
+
+    void setDefaultView();
+
+    void setSizeView(int newSize);
+
+    void setZoomView(float newZoom);
+
+    void setPanView(float newX, float newY);
+
     void create(std::string input); // only for Agents
+
+    void setCourseAgent(const string &agentName, float course, float speed = 0);
+
+    void setPositionAgent(const string &agentName, float newX, float newY, float speed = 0);
+
+    void setDestinationAgent(const string &agentName, const string &newDest);
+
+    void stopAgent(const string &agentName);
+
+    void attack(const string &thugName, const string &peasantName);
+
+    void start_working(const string &peasantName, const string &castle, const string &farm);
+
+
+    shared_ptr<Agent> &getAgent(const string &name);
+
+    shared_ptr<Structure> &getStructure(const string &name);
 
     /**
      * exception classes

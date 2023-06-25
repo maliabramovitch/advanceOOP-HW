@@ -23,7 +23,7 @@ public:
 
     void deposit(int boxes) override;
 
-    int withdraw(int boxes) override;
+    int withdraw() override;
 
     void operator+=(int boxes);
 

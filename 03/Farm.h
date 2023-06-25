@@ -25,11 +25,9 @@ public:
 
     int getBoxesPerHour() const;
 
-    int withdraw(int boxes) override;
+    int withdraw() override;
 
     void deposit(int boxes) override;
-
-    void operator-=(int);
 
     /**SimObject**/
     void broadcastCurrentState() const override;

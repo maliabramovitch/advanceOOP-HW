@@ -74,7 +74,7 @@ public:
 
     bool operator!=(const Structure &rhs) { return !((name == rhs.name) & (x == rhs.x) & (y == rhs.y)); }
 
-    virtual int withdraw(int boxes) = 0;
+    virtual int withdraw() = 0;
 
     virtual void deposit(int boxes) = 0;
 

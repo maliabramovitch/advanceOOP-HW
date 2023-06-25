@@ -12,33 +12,14 @@
 
 class Knight : virtual public Agent {
 private:
-    class Comparator {
-        const weak_ptr<Structure>& myDest;
-    public:
-        explicit Comparator(const weak_ptr<Structure> &myDest) : myDest(myDest){};
-        bool operator()( const weak_ptr<Structure> &dest1, const weak_ptr<Structure> &dest2);
-    };
-    bool destination = false;
-    weak_ptr<Structure> originDestination;
-    weak_ptr<Structure> currentDestination;
-    weak_ptr<Structure> nextDestination;
-    const deque<weak_ptr<Structure>> &map; // for every Knight in the game it will be the same map
+    shared_ptr<Structure> originDestination;
+    shared_ptr<Structure> currentDestination;
+    shared_ptr<Structure> nextDestination;
+    deque <shared_ptr<Structure>> map; // for every Knight in the game it will be the same map
     bool moving = false;
-
-    /**
-     * priority queue for choosing the riding course;
-     * @param currentDest
-     */
-    deque<weak_ptr<Structure>> ridingMap;
-
-    /**
-     * creating minimum heap
-     * @param myDest
-     */
-    void sortRidingMap(const weak_ptr<Structure> &myDest);
-
+    deque <shared_ptr<Structure>> ridingMap;
 public:
-    explicit Knight(const std::string &name, weak_ptr<Structure> &firstDest, deque<weak_ptr<Structure>> &map);
+    explicit Knight(const std::string &name, shared_ptr<Structure> &firstDest, deque <shared_ptr<Structure>> &map);
 
     Knight(const Knight &rhs);
 
@@ -48,9 +29,9 @@ public:
 
     Knight &operator=(Knight &&lhs) noexcept;
 
-    ~Knight() ;
+    ~Knight();
 
-    void setDestination(weak_ptr<Structure> &nexDest);
+    void setDestination(shared_ptr<Structure> &nexDest);
 
     void setPosition(float newX, float newY);
 
@@ -63,7 +44,7 @@ public:
     void update() override;
 
     /**MovingObject**/
-    void move(float speed) override;
+    void doMove(float speed) override;
 
 };
 

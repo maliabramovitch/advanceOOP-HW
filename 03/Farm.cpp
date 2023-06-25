@@ -3,7 +3,6 @@
 //
 
 #include "Model.h"
-#include "Farm.h"
 
 
 #include <utility>
@@ -21,13 +20,14 @@ Farm &Farm::operator=(Farm &&lhs) noexcept = default;
 
 int Farm::getBoxesPerHour() const { return boxesPerHour; }
 
-int Farm::withdraw(int boxes) {
-    boxesInStorage -= boxes;
+int Farm::withdraw() {
+    if (boxesInStorage > boxesPerHour) {
+        boxesInStorage -= boxesPerHour;
+        return boxesPerHour;
+    }
+    int boxes = boxesInStorage;
+    boxesInStorage = 0;
     return boxes;
-}
-
-void Farm::operator-=(int boxes) {
-    withdraw(boxes);
 }
 
 void Farm::update() {

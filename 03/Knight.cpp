@@ -6,35 +6,8 @@
 #include <utility>
 #include <algorithm>
 
-
-bool Knight::Comparator::operator()(const weak_ptr<Structure> &dest1, const weak_ptr<Structure> &dest2) {
-    float sub1 = dest1.lock()->getX() - myDest.lock()->getX();
-    float sub2 = dest1.lock()->getY() - myDest.lock()->getY();
-    float d1 = sqrt((pow(sub1, 2) + pow(sub2, 2)));
-    float sub3 = dest2.lock()->getX() - myDest.lock()->getX();
-    float sub4 = dest2.lock()->getY() - myDest.lock()->getY();
-    float d2 = sqrt((pow(sub3, 2) + pow(sub4, 2)));
-    if (d1 == d2) {
-        return dest1.lock()->getName() < dest2.lock()->getName();
-    }
-    return d1 < d2;
-}
-
-void Knight::sortRidingMap(const weak_ptr<Structure> &myDest) {
-    if (ridingMap.empty()) {
-        for (const auto &i: map) {
-            if (*currentDestination.lock() == *i.lock() || *originDestination.lock() == *i.lock()) {
-                continue;
-            }
-            ridingMap.push_back(i);
-        }
-    }
-    std::sort(ridingMap.begin(), ridingMap.end(), Comparator(myDest));
-}
-
-
-Knight::Knight(const std::string &name, weak_ptr<Structure> &firstDest, deque<weak_ptr<Structure>> &map) :
-        Agent(name, 10, firstDest.lock()->getX(), firstDest.lock()->getY(), 'K', 20), originDestination(firstDest),
+Knight::Knight(const std::string &name, shared_ptr<Structure> &firstDest, deque<shared_ptr<Structure>> &map) :
+        Agent(name, 10, firstDest->getX(), firstDest->getY(), 'K', 20), originDestination(firstDest),
         currentDestination(firstDest), nextDestination(firstDest), map(map) {}
 
 
@@ -43,6 +16,7 @@ Knight::Knight(const Knight &rhs) :
     originDestination = rhs.originDestination;
     currentDestination = rhs.currentDestination;
     nextDestination = rhs.nextDestination;
+    ridingMap = rhs.ridingMap;
 }
 
 Knight &Knight::operator=(const Knight &rhs) {
@@ -51,6 +25,7 @@ Knight &Knight::operator=(const Knight &rhs) {
         originDestination = rhs.originDestination;
         currentDestination = rhs.currentDestination;
         nextDestination = rhs.nextDestination;
+        ridingMap = rhs.ridingMap;
     }
     return *this;
 }
@@ -62,6 +37,7 @@ Knight::Knight(Knight &&lhs) noexcept: Agent(std::move(lhs)), map(lhs.map) {
     currentX = lhs.currentX;
     currentY = lhs.currentY;
     nextDestination = lhs.nextDestination;
+    ridingMap = std::move(ridingMap);
     lhs.originDestination.reset();
     lhs.currentDestination.reset();
     lhs.nextDestination.reset();
@@ -74,6 +50,8 @@ Knight &Knight::operator=(Knight &&lhs) noexcept {
         originDestination = lhs.originDestination;
         currentDestination = lhs.currentDestination;
         nextDestination = lhs.nextDestination;
+        moving = lhs.moving;
+        ridingMap = std::move(lhs.ridingMap);
         lhs.originDestination.reset();
         lhs.currentDestination.reset();
         lhs.nextDestination.reset();
@@ -89,93 +67,88 @@ Knight::~Knight() {
     originDestination.reset();
     currentDestination.reset();
     nextDestination.reset();
+    ridingMap.clear();
 }
 
-void Knight::setDestination(weak_ptr<Structure> &nexDest) {
-    destination = true;
+void Knight::setDestination(shared_ptr<Structure> &nexDest) {
     nextDestination = nexDest;
-    setNewPosition(nextDestination.lock()->getX(), nextDestination.lock()->getY(), speed);
-    sortRidingMap(nextDestination);
+    MovingObject::setNewPosition(nextDestination->getX(), nextDestination->getY(), speed);
+    ridingMap.clear();
+    for (const auto &i: map) {
+        if (*currentDestination == *i || *originDestination == *i) {
+            continue;
+        }
+        ridingMap.push_back(i);
+    }
+    sort(ridingMap.begin(), ridingMap.end(), [](const shared_ptr<Structure> &s1, const shared_ptr<Structure> &s2) {
+        return s1->getName() < s2->getName();
+    });
+    movement = DESTINATION;
     moving = true;
 }
 
 void Knight::setPosition(float newX, float newY) {
-    destination = false;
-    setNewPosition(newX, newY, speed);
+    MovingObject::setNewPosition(newX, newY, speed);
     currentDestination.reset();
     nextDestination.reset();
     originDestination.reset();
+    ridingMap.clear();
     moving = true;
 }
 
 void Knight::setCourse(float newCourse) {
-    destination = false;
     MovingObject::setCourse(course, 10.0);
     currentDestination.reset();
     nextDestination.reset();
     originDestination.reset();
+    ridingMap.clear();
     moving = true;
 }
 
 void Knight::broadcastCurrentState() const {
     std::cout << "Knight ";
     Agent::broadcastCurrentState();
-    if (stopped && !moving) {
-        cout << "Stopped" << endl;
-    } else {
-        if (destination) {
-            cout << "Heading to " << nextDestination.lock()->getName() << ", speed 10.00 km/h" << endl;
-            return;
-        }
-        if (position) {
-            cout << "Heading to (" << getNewX() << ", " << getNewY() << "), ";
-            cout << "speed " << speed << " km/h" << endl;
-
-        } else {
-            cout << "Heading on course " << course << " deg, speed 10.00 km/h" << endl;
-        }
+    if (movement == DESTINATION && !stopped) {
+        cout << "Heading to " << nextDestination->getName() << ", speed 10.00 km/h" << endl;
+        return;
     }
-
 }
 
 void Knight::update() {
-    move(speed);
-}
-
-void Knight::move(float speed) {
-    if (stopped) { //reached to the next destination
-        if (moving) {
-            if (destination) {
-                if (ridingMap.size() == 1 && *ridingMap.front().lock() != *originDestination.lock()) {
-                    ridingMap.push_back(originDestination);
-                }
-                currentDestination = ridingMap.front();
-                ridingMap.pop_front();
-                if (ridingMap.empty()) {
-                    stopped = true;
-                    moving = false;
-                } else {
-                    setDestination(ridingMap.front());
-                }
-            }
-            if (position) {
-                float minDistance = MAXFLOAT;
-                for (auto &structure: map) {
-                    float dis = MovingObject::calculateDistance(getCurrentX(), getCurrentY(), structure.lock()->getX(),
-                                                                structure.lock()->getY());
-                    if (dis < minDistance) {
-                        minDistance = dis;
-                        originDestination = structure;
+    if (movement == DESTINATION) {
+        if (moving && currentX == newX && currentY == newY) { // reached to the next destination
+            currentDestination = nextDestination;
+            ridingMap.erase(std::find(ridingMap.begin(), ridingMap.end(), currentDestination));
+            if (ridingMap.empty()) {// finished the patrol
+                stopped = true;
+                moving = false;
+            } else {
+                if (ridingMap.size() == 1) {
+                    if (ridingMap.front() !=
+                        originDestination) { // last place in the patrol before returning to the start
+                        ridingMap.push_back(originDestination);
                     }
-                    sortRidingMap(originDestination);
-                    setDestination(nextDestination);
+                    nextDestination = ridingMap.front();
+                    MovingObject::setNewPosition(nextDestination->getX(), nextDestination->getY(), speed);
+                } else {
+                    float mostClosed = MAXFLOAT;
+                    for (shared_ptr<Structure> &dest: ridingMap) {
+                        float tmpDistance = MovingObject::calculateDistance(currentX, currentY, dest->getX(),
+                                                                            dest->getY());
+                        if (tmpDistance < mostClosed) {
+                            MovingObject::setNewPosition(dest->getX(), dest->getY(), speed);
+                            nextDestination = dest;
+                            mostClosed = tmpDistance;
+                        }
+                    }
                 }
             }
-        } else {
-            return;
         }
     }
-    MovingObject::move(speed);
+}
+
+void Knight::doMove(float speed) {
+    MovingObject::doMove(speed);
 }
 
 

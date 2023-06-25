@@ -10,6 +10,7 @@
 #include "Model.h"
 
 class Thug : virtual public Agent {
+    shared_ptr<Agent> peasantToAttack = nullptr;
 public:
     Thug(const std::string &name, float x, float y);
 
@@ -21,8 +22,9 @@ public:
 
     Thug &operator=(Thug &&lhs) noexcept;
 
-    bool attack(const std::weak_ptr<Agent> &peasant);
+    bool attack();
 
+    void srtPeasantToAttack(shared_ptr<Agent>& peasant);
     /**SimObject**/
 
     void broadcastCurrentState() const override;

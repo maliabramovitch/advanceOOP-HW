@@ -1,9 +1,9 @@
-#include "Model.h"
-#include <deque>
+#include "Controller.h"
 
 using namespace std;
 
-int main() {
+int main(int argc, char **argv) {
+/*
     deque<weak_ptr<Agent>> adq;
     deque<weak_ptr<Structure>> sdq;
 
@@ -39,7 +39,7 @@ int main() {
     dynamic_pointer_cast<Peasant>(adq[3].lock())->addTask(sdq[3], sdq[2]); //Zug
     dynamic_pointer_cast<Thug>(adq[4].lock())->setCourse(180, 30); // Loki
     dynamic_pointer_cast<Thug>(adq[5].lock())->setCourse(270, 30); // Gog
-    int c = 1;
+    int c = 10;
     for (const auto & i : adq) {
         i.lock()->broadcastCurrentState();
     }
@@ -55,6 +55,14 @@ int main() {
         }
         cout << endl;
         --c;
+    }
+*/
+    try {
+        shared_ptr<Controller> controller = Controller::getControllerInstance(argv[1], argv[2]);
+        controller->run();
+    }
+    catch (exception &e) {
+        cout << e.what() << endl;
     }
 }
 

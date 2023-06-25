@@ -2,7 +2,8 @@
 // Created by Mali Abramovitch on 08/06/2023.
 //
 
-#include "Thug.h"
+#include "Model.h"
+
 
 Thug::Thug(const std::string &name, float x, float y) :
         Agent(name, 30, x, y, 'T', 5) {}
@@ -25,32 +26,30 @@ Thug &Thug::operator=(Thug &&lhs) noexcept {
     return *this;
 }
 
-bool Thug::attack(const std::weak_ptr<Agent> &peasant) {
-    if (health > peasant.lock()->getHealth()) {
-        auto p = dynamic_pointer_cast<Peasant>(peasant.lock());
-        p->wasAttacked();
-        ++health;
-        stopped = true;
-        ++health;
-    } else {
-        setHealth(peasant.lock()->getHealth() - 1);
-        --health;
+bool Thug::attack() {
+    if (peasantToAttack != nullptr) {
+        auto p = dynamic_pointer_cast<Peasant>(peasantToAttack);
+        if (!p) {
+            throw Model::InputDataException("Peasant dynamic cast problem in Thug::attack\n");
+        }
+        if (health < p->getHealth()) {
+            p->wasAttacked(true);
+        } else {
+            p->wasAttacked(false);
+        }
+        peasantToAttack = nullptr;
     }
 }
 
 void Thug::broadcastCurrentState() const {
     cout << "Thug ";
     Agent::broadcastCurrentState();
-    if (position) {
-        cout << "Heading to (" << getNewX() << ", " << getNewY() << "), ";
-        cout << "speed " << speed << " km/h" << endl;
-    } else {
-        cout << "Heading on course " << course << " deg, speed " << speed << " km/h" << endl;
-    }
 }
 
 void Thug::update() {
-    if (!stopped) {
-        move(speed);
-    }
+    attack();
+}
+
+void Thug::srtPeasantToAttack(shared_ptr<Agent>& peasant) {
+    peasantToAttack = peasant;
 }
