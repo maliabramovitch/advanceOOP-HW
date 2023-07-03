@@ -3,6 +3,7 @@
 //
 
 #include "Model.h"
+#include <cmath>
 
 void View::default_view() {
     x = 0;
@@ -14,7 +15,7 @@ void View::default_view() {
 void View::adjustSize(int newSize) {
     if (newSize <= 6 || newSize > 30) {
         stringstream ss;
-        ss << "oppsi poosi... Size: " << newSize << "illegal, (6 < size <= 30)" << endl;
+        ss << "oppsi poosi... Size: " << newSize << " illegal, (6 < size <= 30)" << endl;
         throw ViewException(ss.str());
     }
     size = newSize;
@@ -23,7 +24,7 @@ void View::adjustSize(int newSize) {
 void View::adjustZoom(float newZoom) {
     if (newZoom < 0) {
         stringstream ss;
-        ss << "oppsi poosi... Zoom: " << newZoom << "illegal, (Zoom > 0)" << endl;
+        ss << "oppsi poosi... Zoom: " << newZoom << " illegal, (Zoom > 0)" << endl;
         throw ViewException(ss.str());
     }
     zoom = newZoom;
@@ -34,8 +35,8 @@ void View::adjustPan(float newX, float newY) {
     y = newY;
 }
 
-int getLen(int row, int col, int x, int y) {
-    int len = 3;
+unsigned int getLen(int row, int col, int x, int y) {
+    unsigned int len = 3;
     stringstream ss;
     ss << row;
     if (ss.str().size() > len) len = ss.str().size();
@@ -52,38 +53,38 @@ int getLen(int row, int col, int x, int y) {
     return len;
 }
 
-void View::show() {
+void View::show() const {
     cout << setprecision(2) << std::fixed << "Display size: " << size << ", scale: "
          << zoom << ", origin: (" << x << ", " << y << ")" << endl;
     int row = (int) (y + zoom * ((float) size - 1));
     int col = (int) (x + zoom * ((float) size - 1));
-    int len = getLen(row, col, x, y);
+    unsigned int len = getLen(row, col, (int) x, (int) y);
     int counter = size - 1;
     std::ios_base::fmtflags f(cout.flags());
-    for (int i = row; i >= (int) y; i -= (int) zoom) {
+    for (int i = row; i >= y; i -= zoom) {
         if (counter % 3 == 0) {
-            cout << setw(len) << setfill(' ') << right << i << ' ';
+            cout << setw(len) << setfill(' ') << right << (int) i << ' ';
             cout.flags(f);
         } else {
             cout << setw(4) << setfill(' ') << ' ';
         }
         --counter;
-        for (int j = x; j <= col; j += (int) zoom) {
+        for (int j = x; j <= col; j += zoom) {
             string square = ".";
-            for (auto &agent: Model::getModelInstance()->agents) {
-                if (agent->getCurrentY() >= (float) i && agent->getCurrentY() < (float) i + zoom &&
-                    agent->getCurrentX() >= (float) j && agent->getCurrentX() < (float) j + zoom) {
+            float agentX, agentY;
+            for (const auto &agent: Model::getModelInstance()->getAgents()) {
+                agentX = (agent->getCurrentX());
+                agentY = (agent->getCurrentY());
+                if (((agentX == j) || (agentX >= (j) && agentX < (j + zoom))) &&
+                    (((agentY == i) || (agentY >= (i) && agentY < (i + zoom))))) {
                     square = agent->getName().substr(0, 2);
                 }
             }
             stringstream ss;
-            for (auto &structure: Model::getModelInstance()->structures) {
-                if (structure->getY() >= (float) i && structure->getY() < (float) i + zoom &&
-                    structure->getX() >= (float) j && structure->getX() < (float) j + zoom) {
+            for (const auto &structure: Model::getModelInstance()->getStructures()) {
+                if (structure->getY() >= i && structure->getY() < i + zoom &&
+                    structure->getX() >= j && structure->getX() < j + zoom) {
                     square = structure->getName().substr(0, 2);
-                    square = structure->getName().substr(0, 2);
-                    ss << '\n' << square << ",  " << i << ", " << j << ",  " << structure->getY() << ", "
-                       << structure->getX() << endl;
                 }
             }
             cout << setw(2) << setfill(' ') << left << square;
@@ -91,9 +92,9 @@ void View::show() {
         cout << endl;
     }
     cout.flags(f);
-    counter = size - 1;
+    counter = 0;
     stringstream ss;
-    for (int i = x; i <= col; i += (int) zoom) {
+    for (int i = x; i <= col; i = i + (int) zoom) {
         if (counter % 3 == 0) {
             if (i == x) {
                 cout << setw(len + 2) << setfill(' ') << right << i;
@@ -103,6 +104,7 @@ void View::show() {
                 ss.seekp(ios::beg);
             }
         }
-        --counter;
+        ++counter;
     }
+    cout << endl;
 }

@@ -22,7 +22,7 @@ public:
     void adjustSize(int newSize);
     void adjustZoom(float newZoom);
     void adjustPan(float newX, float newY);
-    void show();
+    void show() const;
 
 };
 

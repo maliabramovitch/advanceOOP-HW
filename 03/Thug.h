@@ -11,6 +11,7 @@
 
 class Thug : virtual public Agent {
     shared_ptr<Agent> peasantToAttack = nullptr;
+    bool thisIsAKnight = false;
 public:
     Thug(const std::string &name, float x, float y);
 
@@ -24,7 +25,7 @@ public:
 
     bool attack();
 
-    void srtPeasantToAttack(shared_ptr<Agent>& peasant);
+    void setPeasantToAttack(shared_ptr<Agent>& peasant, bool KnightIsClosed);
     /**SimObject**/
 
     void broadcastCurrentState() const override;

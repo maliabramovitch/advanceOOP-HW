@@ -21,9 +21,9 @@ Farm &Farm::operator=(Farm &&lhs) noexcept = default;
 int Farm::getBoxesPerHour() const { return boxesPerHour; }
 
 int Farm::withdraw() {
-    if (boxesInStorage > boxesPerHour) {
-        boxesInStorage -= boxesPerHour;
-        return boxesPerHour;
+    if (boxesInStorage > 5) {
+        boxesInStorage -= 5;
+        return 5;
     }
     int boxes = boxesInStorage;
     boxesInStorage = 0;

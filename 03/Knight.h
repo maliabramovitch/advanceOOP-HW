@@ -18,6 +18,7 @@ private:
     deque <shared_ptr<Structure>> map; // for every Knight in the game it will be the same map
     bool moving = false;
     deque <shared_ptr<Structure>> ridingMap;
+    bool justArrived = false;
 public:
     explicit Knight(const std::string &name, shared_ptr<Structure> &firstDest, deque <shared_ptr<Structure>> &map);
 
@@ -44,7 +45,7 @@ public:
     void update() override;
 
     /**MovingObject**/
-    void doMove(float speed) override;
+    void doMove() override;
 
 };
 

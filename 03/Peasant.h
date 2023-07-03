@@ -17,13 +17,13 @@ class Peasant : virtual public Agent {
         shared_ptr<Structure> farm;
         shared_ptr<Structure> castle;
 
-        Work(shared_ptr<Structure> farm, shared_ptr<Structure> castle);
+        Work(const shared_ptr<Structure>& farm, const shared_ptr<Structure>& castle);
         ~Work();
     };
 
     int boxesCarrying = 0;
-    bool working = false;
-    enum {WALKING_TO_THE_FARM=0, LOADING_BOXES_IN_THE_FARM =1 , WALKING_TO_THE_CASTLE = 2, UNLOADING_BOXES_IN_THE_CASTLE};
+    bool working = false, justFinishedWalking = false;
+    enum {WALKING_TO_THE_FARM=0, LOADING_BOXES_IN_THE_FARM =1 , WALKING_TO_THE_CASTLE = 2, UNLOADING_BOXES_IN_THE_CASTLE=3};
     int workingCircle = 0;
     /*
      * 0- needs to go to the farm
@@ -61,7 +61,7 @@ public:
         working = false;
     }
 
-    void doMove(float newSpeed) override;
+    void doMove() override;
 
     void broadcastCurrentState() const override;
 

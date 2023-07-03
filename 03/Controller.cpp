@@ -2,97 +2,200 @@
 // Created by Mali Abramovitch on 18/06/2023.
 //
 
+#include <fstream>
 #include "Model.h"
 #include "Controller.h"
 
 
 std::shared_ptr<Controller>Controller::instancePtr = nullptr;
+std::shared_ptr<Model>Controller::model = nullptr;
+
+Controller::Controller() {
+    view = make_shared<View>();
+    model = Model::getModelInstance();
+    model->attachedView(view);
+}
 
 
 shared_ptr<Controller> &Controller::getControllerInstance(char *castlesFileName, char *farmsFileName) {
     if (!instancePtr) {
         instancePtr = shared_ptr<Controller>(new Controller());
-        Model::getModelInstance()->initCastles(castlesFileName);
-        Model::getModelInstance()->initFarms(farmsFileName);
+        model->initCastles(castlesFileName);
+        model->getModelInstance()->initFarms(farmsFileName);
     }
     return instancePtr;
 }
 
 Controller::~Controller() {
     instancePtr.reset();
+    Model::getModelInstance()->detachesView();
+    view.reset();
 }
 
-void Controller::run() {
-    cout << "Welcome friend to SimMedieval!" << endl;
-    cout << "Commands:\n"
-            "\t1.  go\n"
-            "\t2.  status\n"
-            "\t3.exit\n"
-            "Agents Commands:\n"
-            "\t1.  create <NAME> <Knight/Peasant/Thug> <[Knight=Castle/Farm]/[Peasant/Thug=(dd.dd,dd.dd)]\n"
-            "\t2.  <NAME> course <DEGREE> <Thug=SPEED>\n"
-            "\t3.  <NAME> position <(FLOAT.00, FLOAT.00)> <Thug=SPEED>\n"
-            "\t4.  <NAME> destination <CASTLE/FARM>\n"
-            "\t5.  <NAME> stop\n"
-            "\t6.  <THUG> attack <PEASANT>\n"
-            "\t7.  <PEASANT> start_working <FARM> <CASTLE>\n"
-            "View Commands:\n"
-            "\t1.  default\n"
-            "\t2.  size <SIZE>\n"
-            "\t3.  zoom <<FLOAT > 0>\n"
-            "\t4.  pan <FLOAT.00> <FLOAT.00>\n"
-            "\t5.  show\n";
-    while (true) {
-        try {
-            stringstream ss;
-            cout << "Time: " << Model::getModelInstance()->getTime() << " Enter input: ";
-            string input;
-            getline(std::cin, input);
-            ss.seekp(ios::beg);
-            ss << input;
-            /// Commands
-            if (input.find("exit") != string::npos) {
-                cout << "Farewell -> Goodbye." << endl;
-                return;
+void Controller::run(bool checkMode) {
+    if (checkMode) {
+        fstream infile("input.dat");
+        fstream outfile("output.txt", ios::out);
+        std::streambuf *oldCoutBuffer = std::cout.rdbuf();
+        std::cout.rdbuf(outfile.rdbuf());
+        cout << "Welcome friend to SimMedieval!" << endl;
+        cout << "Commands:\n"
+                "\t1.  go\n"
+                "\t2.  status\n"
+                "\t3.  exit\n"
+                "Agents Commands:\n"
+                "\t1.  create <NAME> <Knight/Peasant/Thug> <[Knight=Castle/Farm]/[Peasant/Thug=(dd.dd,dd.dd)]\n"
+                "\t2.  <NAME> course <DEGREE> <Thug=SPEED>\n"
+                "\t3.  <NAME> position <(FLOAT.00, FLOAT.00)> <Thug=SPEED>\n"
+                "\t4.  <NAME> destination <CASTLE/FARM>\n"
+                "\t5.  <NAME> stop\n"
+                "\t6.  <THUG> attack <PEASANT>\n"
+                "\t7.  <PEASANT> start_working <FARM> <CASTLE>\n"
+                "View Commands:\n"
+                "\t1.  default\n"
+                "\t2.  size <SIZE>\n"
+                "\t3.  zoom <<FLOAT > 0>\n"
+                "\t4.  pan <FLOAT.00> <FLOAT.00>\n"
+                "\t5.  show\n";
+        while (true) {
+            try {
+                stringstream ss;
+                cout << "Time: " << Model::getModelInstance()->getTime() << " Enter input: ";
+                string input;
+                getline(infile, input);
+                cout << input;
+                input.pop_back();
+                /// Commands
+                if (input.find("exit") != string::npos) {
+                    cout << "Farewell -> Goodbye." << endl;
+                    break;
+                }
+                if (input.find("go") != string::npos) {
+                    goHelper(input);
+                } else if (input.find("status") != string::npos) {
+                    statusHelper(input);
+                } else if (input.find("show") != string::npos) {
+                    showHelper(input);
+                } else if (input.find("default") != string::npos) {
+                    defaultHelper(input);
+                } else if (input.find("size") != string::npos) {
+                    sizeHelper(input);
+                } else if (input.find("zoom") != string::npos) {
+                    zoomHelper(input);
+                } else if (input.find("pan") != string::npos) {
+                    panHelper(input);
+                } /// Agent Commands
+                else if (input.find("create") != string::npos) {
+                    createHelper(input);
+                } else if (input.find("course") != string::npos) {
+                    courseHelper(input);
+                } else if (input.find("position") != string::npos) {
+                    positionHelper(input);
+                } else if (input.find("destination") != string::npos) {
+                    destinationHelper(input);
+                } else if (input.find("stop") != string::npos) {
+                    stopHelper(input);
+                } else if (input.find("attack") != string::npos) {
+                    attackHelper(input);
+                } else if (input.find("start_working") != string::npos) {
+                    start_workingHelper(input);
+                } else {
+                    cout << "illegal command " << input << endl;
+                }
             }
-            if (input.find("go") != string::npos) {
-                goHelper(input);
-            } else if (input.find("status") != string::npos) {
-                statusHelper(input);
-            } else if (input.find("show") != string::npos) {
-                showHelper(input);
-            } else if (input.find("default") != string::npos) {
-                defaultHelper(input);
-            } else if (input.find("size") != string::npos) {
-                sizeHelper(input);
-            } else if (input.find("zoom") != string::npos) {
-                zoomHelper(input);
-            } else if (input.find("pan") != string::npos) {
-                panHelper(input);
-            } /// Agent Commands
-            else if (input.find("create") != string::npos) {
-                createHelper(input);
-            } else if (input.find("course") != string::npos) {
-                courseHelper(input);
-            } else if (input.find("position") != string::npos) {
-                positionHelper(input);
-            } else if (input.find("destination") != string::npos) {
-                destinationHelper(input);
-            } else if (input.find("stop") != string::npos) {
-                stopHelper(input);
-            } else if (input.find("attack") != string::npos) {
-                attackHelper(input);
-            } else if (input.find("start_working") != string::npos) {
-                start_workingHelper(input);
-            } else {
-                cerr << "illegal command" << input << endl;
+            catch (exception &e) {
+                cout << e.what();
             }
-        }
-        catch (exception &e) {
-            cerr << e.what();
-        }
-    }
+            cin.clear();
+            cout << endl;
 
+        }
+        std::cout.rdbuf(oldCoutBuffer);
+        outfile.close();
+    } /*else {
+        fstream infile("input.dat");
+        fstream outfile("output.dat", ios::app);
+        std::streambuf *oldCoutBuffer = std::cout.rdbuf();
+        std::cout.rdbuf(outfile.rdbuf());
+        cout << "Welcome friend to SimMedieval!" << endl;
+        cout << "Commands:\n"
+                "\t1.  go\n"
+                "\t2.  status\n"
+                "\t3.  exit\n"
+                "Agents Commands:\n"
+                "\t1.  create <NAME> <Knight/Peasant/Thug> <[Knight=Castle/Farm]/[Peasant/Thug=(dd.dd,dd.dd)]\n"
+                "\t2.  <NAME> course <DEGREE> <Thug=SPEED>\n"
+                "\t3.  <NAME> position <(FLOAT.00, FLOAT.00)> <Thug=SPEED>\n"
+                "\t4.  <NAME> destination <CASTLE/FARM>\n"
+                "\t5.  <NAME> stop\n"
+                "\t6.  <THUG> attack <PEASANT>\n"
+                "\t7.  <PEASANT> start_working <FARM> <CASTLE>\n"
+                "View Commands:\n"
+                "\t1.  default\n"
+                "\t2.  size <SIZE>\n"
+                "\t3.  zoom <<FLOAT > 0>\n"
+                "\t4.  pan <FLOAT.00> <FLOAT.00>\n"
+                "\t5.  show\n";
+        while (true) {
+            try {
+                stringstream ss;
+                cout << "Time: " << Model::getModelInstance()->getTime() << " Enter input: ";
+                string input;
+                getline(std::cin, input);
+                ss.clear();
+                ss << input;
+                if (!infile) {
+                    input = "exit";
+                } else {
+                    getline(infile, input);
+                    input.pop_back();
+                    cout << input << endl;
+                }
+                /// Commands
+                if (input.find("exit") != string::npos) {
+                    cout << "Farewell -> Goodbye." << endl;
+                    break;
+                }
+                if (input.find("go") != string::npos) {
+                    goHelper(input);
+                } else if (input.find("status") != string::npos) {
+                    statusHelper(input);
+                } else if (input.find("show") != string::npos) {
+                    showHelper(input);
+                } else if (input.find("default") != string::npos) {
+                    defaultHelper(input);
+                } else if (input.find("size") != string::npos) {
+                    sizeHelper(input);
+                } else if (input.find("zoom") != string::npos) {
+                    zoomHelper(input);
+                } else if (input.find("pan") != string::npos) {
+                    panHelper(input);
+                } /// Agent Commands
+                else if (input.find("create") != string::npos) {
+                    createHelper(input);
+                } else if (input.find("course") != string::npos) {
+                    courseHelper(input);
+                } else if (input.find("position") != string::npos) {
+                    positionHelper(input);
+                } else if (input.find("destination") != string::npos) {
+                    destinationHelper(input);
+                } else if (input.find("stop") != string::npos) {
+                    stopHelper(input);
+                } else if (input.find("attack") != string::npos) {
+                    attackHelper(input);
+                } else if (input.find("start_working") != string::npos) {
+                    start_workingHelper(input);
+                } else {
+                    cerr << "illegal command " << input << endl;
+                }
+            }
+            catch (exception &e) {
+                cerr << e.what();
+            }
+            cin.clear();
+            cout << endl;
+        }
+    }*/
 }
 
 void Controller::goHelper(string &input) {
@@ -100,11 +203,11 @@ void Controller::goHelper(string &input) {
     ss << input;
     ss >> input;
     if (input != "go" || !ss.eof()) {
-        ss.seekp(ios::beg);
-        ss << "illegal go command" << input << endl;
+        ss.clear();
+        ss << "oppsi poosi... illegal go command " << input << endl;
         throw ControllerException(ss.str());
     }
-    Model::getModelInstance()->go();
+    model->go();
 }
 
 void Controller::statusHelper(string &input) {
@@ -112,11 +215,11 @@ void Controller::statusHelper(string &input) {
     ss << input;
     ss >> input;
     if (input != "status" || !ss.eof()) {
-        ss.seekp(ios::beg);
-        ss << "illegal status command" << input << endl;
+        ss.clear();
+        ss << "oppsi poosi... illegal status command " << input << endl;
         throw ControllerException(ss.str());
     }
-    Model::getModelInstance()->status();
+    model->status();
 }
 
 void Controller::showHelper(string &input) {
@@ -124,11 +227,11 @@ void Controller::showHelper(string &input) {
     ss << input;
     ss >> input;
     if (input != "show" || !ss.eof()) {
-        ss.seekp(ios::beg);
-        ss << "illegal show command" << input << endl;
+        ss.clear();
+        ss << "oppsi poosi... illegal show command " << input << endl;
         throw ControllerException(ss.str());
     }
-    Model::getModelInstance()->show();
+    view->show();
 }
 
 void Controller::defaultHelper(string &input) {
@@ -136,31 +239,31 @@ void Controller::defaultHelper(string &input) {
     ss << input;
     ss >> input;
     if (input != "default" || !ss.eof()) {
-        ss.seekp(ios::beg);
-        ss << "illegal default command" << input << endl;
+        ss.clear();
+        ss << "oppsi poosi... illegal default command " << input << endl;
         throw ControllerException(ss.str());
     }
-    Model::getModelInstance()->setDefaultView();
+    view->default_view();
 }
 
 void Controller::sizeHelper(string &input) {
     try {
         stringstream ss;
         int size;
-        string command;
-        ss >> command;
-        if (command != "size") {
-            ss.seekp(ios::beg);
-            ss << "illegal size command" << input << endl;
+        split(input);
+        if (args.size() != 2 || args[0] != "size") {
+            ss.clear();
+            ss << "oppsi poosi... illegal size command " << input << endl;
             throw ControllerException(ss.str());
         }
+        ss << args[1];
         ss >> size;
-        if (!ss || !ss.eof()) {
-            ss.seekp(ios::beg);
-            ss << "illegal size command" << input << endl;
+        if (!ss) {
+            ss.clear();
+            ss << "oppsi poosi... illegal size command " << input << endl;
             throw ControllerException(ss.str());
         }
-        Model::getModelInstance()->setSizeView(size);
+        view->adjustSize(size);
     }
     catch (exception &e) {
         throw;
@@ -170,21 +273,21 @@ void Controller::sizeHelper(string &input) {
 void Controller::zoomHelper(string &input) {
     try {
         stringstream ss;
+        split(input);
+        if (args.size() != 2 || args[0] != "zoom") {
+            ss.clear();
+            ss << "oppsi poosi... illegal zoom command " << input << endl;
+            throw ControllerException(ss.str());
+        }
         float zoom;
-        string command;
-        ss >> command;
-        if (command != "zoom") {
-            ss.seekp(ios::beg);
-            ss << "illegal zoom command" << input << endl;
-            throw ControllerException(ss.str());
-        }
+        ss << args[1];
         ss >> zoom;
-        if (!ss || !ss.eof()) {
-            ss.seekp(ios::beg);
-            ss << "oopsi poopsi... illegal zoom command" << input << endl;
+        if (!ss) {
+            ss.clear();
+            ss << "oppsi poosi... illegal zoom command " << input << endl;
             throw ControllerException(ss.str());
         }
-        Model::getModelInstance()->setZoomView(zoom);
+        view->adjustZoom(zoom);
     }
     catch (exception &e) {
         throw;
@@ -194,186 +297,227 @@ void Controller::zoomHelper(string &input) {
 void Controller::panHelper(string &input) {
     stringstream ss;
     float x, y;
-    string command;
-    ss >> command;
+    split(input);
+    ss << args[1] << " " << args[2];
     ss >> x >> y;
     if (!ss || !ss.eof()) {
-        ss.seekp(ios::beg);
-        ss << "illegal pan command" << input << endl;
+        ss.clear();
+        ss << "oppsi poosi... illegal pan command " << input << endl;
         throw ControllerException(ss.str());
     }
-    Model::getModelInstance()->setPanView(x, y);
+    view->adjustPan(x, y);
 }
 
 void Controller::createHelper(const string &input) {
-    Model::getModelInstance()->create(input);
+    try {
+        stringstream ss;
+        split(input);
+        if (args[0] != "create") {
+            if (!ss) {
+                ss.clear();
+                ss << "oppsi poosi... illegal create command " << input << endl;
+                throw ControllerException(ss.str());
+            }
+        }
+        if (args[2] == "Knight" && args.size() == 4) {
+//            ss.clear();
+//            ss << "illegal create command" << input << endl;
+//            throw ControllerException(ss.str());
+            model->createKnight(args[1], args[3]);
+        } else {
+            if (args.size() != 5) {
+                if (!ss) {
+                    ss.clear();
+                    ss << "oppsi poosi... illegal create command " << input << endl;
+                    throw ControllerException(ss.str());
+                }
+            }
+            ss.clear();
+            float x, y;
+            ss << args[3] << " " << args[4];
+            ss >> x >> y;
+            if (!ss) {
+                ss << "oppsi poosi... illegal create command " << input << endl;
+                throw ControllerException(ss.str());
+            }
+            if (args[2] == "Peasant") {
+                model->createPeasant(args[1], x, y);
+            } else if (args[2] == "Thug") {
+                model->createThug(args[1], x, y);
+            } else {
+                ss << "oppsi poosi... illegal create command" << input << endl;
+                throw ControllerException(ss.str());
+            }
+        }
+    }
+    catch (exception &e) {
+        throw;
+    }
 }
 
 void Controller::courseHelper(string &input) {
-    stringstream ss;
-    deque<string> args;
-    string arg;
-    for (int i = 0; i < 3; ++i) {
-        ss >> arg;
-        args.push_back(arg);
-    }
-    if (args[1] != "course") {
-        ss.seekp(ios::beg);
-        ss << "illegal course command" << input << endl;
-        throw ControllerException(ss.str());
-    }
-    shared_ptr<Agent> agent = Model::getModelInstance()->getAgent(args[0]);
-    shared_ptr<Agent> thug = dynamic_pointer_cast<Thug>(agent);
-    ss.seekp(ios::beg);
-    float course;
-    ss << args[2];
-    ss >> course;
-    if (!ss) {
-        ss.seekp(ios::beg);
-        ss << "illegal course command" << input << endl;
-        throw ControllerException(ss.str());
-    }
-    if (!thug) {
-        if (!ss.eof()) {
-            ss.seekp(ios::beg);
-            ss << "illegal course command" << input << endl;
+    try {
+        stringstream ss;
+        split(input);
+        if (args[1] != "course") {
+            ss.clear();
+            ss << "oppsi poosi... illegal course command " << input << endl;
             throw ControllerException(ss.str());
         }
-        Model::getModelInstance()->setCourseAgent(args[0], course);
-    } else {
-        ss >> arg;
-        if (!ss.eof()) {
-            ss.seekp(ios::beg);
-            ss << "illegal course command" << input << endl;
+        ss.clear();
+        float course;
+        ss << args[2];
+        ss >> course;
+        if (!ss) {
+            ss.clear();
+            ss << "oppsi poosi... illegal course command " << input << endl;
             throw ControllerException(ss.str());
         }
-        ss.seekp(ios::beg);
-        float speed;
-        ss << arg;
-        ss >> speed;
-        if (!ss || speed < 0) {
-            ss.seekp(ios::beg);
-            ss << "illegal course command" << input << endl;
-            throw ControllerException(ss.str());
+        if (args.size() == 3) {
+            if (!ss.eof()) {
+                ss.clear();
+                ss << "oppsi poosi... illegal course command " << input << endl;
+                throw ControllerException(ss.str());
+            }
+            model->setCourseAgent(args[0], course);
+        } else {
+            ss.clear();
+            float speed;
+            ss << args[3];
+            ss >> speed;
+            if (!ss || args.size() != 4) {
+                ss.clear();
+                ss << "oppsi poosi... illegal course command " << input << endl;
+                throw ControllerException(ss.str());
+            }
+            model->setCourseAgent(args[0], course, speed);
         }
-        args.push_back(arg);
-        Model::getModelInstance()->setCourseAgent(args[0], course, speed);
+    } catch (exception &e) {
+        throw;
     }
 }
 
 void Controller::positionHelper(string &input) {
-    stringstream ss;
-    deque<string> args;
-    string arg;
-    for (int i = 0; i < 4; ++i) {
-        ss >> arg;
-        args.push_back(arg);
-    }
-    if (args[1] != "position") {
-        ss.seekp(ios::beg);
-        ss << "illegal position command" << input << endl;
-        throw ControllerException(ss.str());
-    }
-    shared_ptr<Agent> agent = Model::getModelInstance()->getAgent(args[0]);
-    shared_ptr<Agent> thug = dynamic_pointer_cast<Thug>(agent);
-    ss.seekp(ios::beg);
-    float x, y;
-    ss << args[2] << args[3];
-    ss >> x;
-    ss >> y;
-    if (!ss) {
-        ss.seekp(ios::beg);
-        ss << "illegal position command" << input << endl;
-        throw ControllerException(ss.str());
-    }
-    if (!thug) {
-        if (!ss.eof()) {
-            ss.seekp(ios::beg);
-            ss << "illegal position command" << input << endl;
+    try {
+        stringstream ss;
+        split(input);
+        if (args[1] != "position") {
+            ss.clear();
+            ss << "oppsi poosi... illegal position command " << input << endl;
             throw ControllerException(ss.str());
         }
-        Model::getModelInstance()->setCourseAgent(args[0], x, y);
-    } else {
-        ss >> arg;
-        if (!ss.eof()) {
-            ss.seekp(ios::beg);
-            ss << "illegal position command" << input << endl;
+        float x, y;
+        ss << args[2] << " " << args[3];
+        if (!ss) {
+            ss.clear();
+            ss << "oppsi poosi... illegal position command " << input << endl;
             throw ControllerException(ss.str());
         }
-        ss.seekp(ios::beg);
-        float speed;
-        ss << arg;
-        ss >> speed;
-        if (!ss || speed < 0) {
-            ss.seekp(ios::beg);
-            ss << "illegal position command" << input << endl;
-            throw ControllerException(ss.str());
+        if (args.size() == 4) {
+            model->setCourseAgent(args[0], x, y);
+        } else {
+            ss.clear();
+            float speed;
+            ss << args[4];
+            ss >> speed;
+            if (!ss || speed < 0) {
+                ss.clear();
+                ss << "oppsi poosi... illegal position command " << input << endl;
+                throw ControllerException(ss.str());
+            }
+            model->setPositionAgent(args[0], x, y, speed);
         }
-        args.push_back(arg);
-        Model::getModelInstance()->setPositionAgent(args[0], x, y, speed);
+    } catch (exception &e) {
+        throw;
     }
+
 }
 
 void Controller::destinationHelper(string &input) {
-    stringstream ss;
-    deque<string> args;
-    string arg;
-    for (int i = 0; i < 3; ++i) {
-        ss >> arg;
-        args.push_back(arg);
+    try {
+        stringstream ss;
+        split(input);
+        if (args[1] != "destination" || args.size() != 3) {
+            ss.clear();
+            ss << "oppsi poosi... illegal destination command " << input << endl;
+            throw ControllerException(ss.str());
+        }
+        model->setDestinationAgent(args[0], args[2]);
     }
-    if (args[1] != "destination") {
-        ss.seekp(ios::beg);
-        ss << "illegal destination command" << input << endl;
-        throw ControllerException(ss.str());
+    catch (exception &e) {
+        throw;
     }
-    shared_ptr<Agent> agent = Model::getModelInstance()->getAgent(args[0]);
-    Model::getModelInstance()->setDestinationAgent(args[0], args[2]);
 }
 
 void Controller::stopHelper(string &input) {
-    stringstream ss;
-    deque<string> args;
-    string arg;
-    while (ss >> arg) {
-        args.push_back(arg);
+    try {
+        stringstream ss;
+        split(input);
+        if (args.size() != 2 || args[1] != "stop") {
+            ss.clear();
+            ss << "oppsi poosi... illegal stop command " << input << endl;
+            throw ControllerException(ss.str());
+        }
+        for (auto &a: args) {
+            cout << a << endl;
+        }
+        model->stopAgent(args[0]);
     }
-    if (args.size() != 2 || args[1] != "stop") {
-        ss.seekp(ios::beg);
-        ss << "illegal stop command" << input << endl;
-        throw ControllerException(ss.str());
+    catch (exception &e) {
+        throw;
     }
-    Model::getModelInstance()->stopAgent(args[0]);
 }
 
 void Controller::attackHelper(string &input) {
-    stringstream ss;
-    deque<string> args;
-    string arg;
-    while (ss >> arg) {
-        args.push_back(arg);
+    try {
+        stringstream ss;
+        split(input);
+        if (args.size() != 3 || args[1] != "attack") {
+            ss.clear();
+            ss << "oppsi poosi... illegal attack command " << input << endl;
+            throw ControllerException(ss.str());
+        }
+        for (auto &a: args) {
+            cout << a << endl;
+        }
+        model->attack(args[0], args[2]);
     }
-    if (args.size() != 3 || args[1] != "attack") {
-        ss.seekp(ios::beg);
-        ss << "illegal attack command" << input << endl;
-        throw ControllerException(ss.str());
+    catch (exception &e) {
+        throw;
     }
-    Model::getModelInstance()->attack(args[0], args[2]);
 }
 
 void Controller::start_workingHelper(string &input) {
+    try {
+        stringstream ss;
+        split(input);
+        if (args.size() != 4 || args[1] != "start_working") {
+            ss.clear();
+            ss << "oppsi poosi... illegal start_working command " << input << endl;
+            throw ControllerException(ss.str());
+        }
+        model->start_working(args[0], args[3], args[2]);
+    }
+    catch (exception &e) {
+        throw;
+    }
+}
+
+void Controller::split(const string &input) {
+    args.clear();
     stringstream ss;
-    deque<string> args;
-    string arg;
+    ss << input;
+    std::string arg;
     while (ss >> arg) {
         args.push_back(arg);
     }
-    if (args.size() != 4 || args[1] != "start_working") {
-        ss.seekp(ios::beg);
-        ss << "illegal start_working command" << input << endl;
-        throw ControllerException(ss.str());
+    for (auto &str: args) {
+        for (auto it = str.begin(); it != str.end();) {
+            if (*it == ')' || *it == '(' || *it == ',') {
+                str.replace(it, it + 1, "");
+            } else {
+                ++it;
+            }
+        }
     }
-    Model::getModelInstance()->start_working(args[0], args[2], args[3]);
 }
-
-

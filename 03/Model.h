@@ -22,9 +22,6 @@ private:
     /**
      * friend classes
      */
-    friend class Controller;
-
-    friend class View;
 
     /**
      * fields
@@ -42,28 +39,30 @@ private:
      */
     Model();
 
-    void initCastles(const char *castlesFileName);
-
-    void initFarms(const char *farmsFileName);
-
-    int initKnightArgs(std::string &input);
-
-    void initPeasantThugArgs(std::string &input) noexcept(false);
-
     void checkCastle(const string &fileName);
 
     void checkFarm(const string &fileName);
 
     void initStructureArgs(const string &fileName, int i);
 
-    static void positionHelper(std::string &input, double &d);
+    static void positionHelper(std::string &input, float &d);
 
+    shared_ptr<Agent> &getAgent(const string &name);
+
+    shared_ptr<Structure> &getStructure(const string &name);
+
+    bool isAgentExist(const string& agentName);
+
+    bool isStructureExist(const string& structureName);
 
 public:
 
     /**
      * class's methods
      */
+    static shared_ptr<Model> getModelInstance();
+
+    ~Model();
 
     Model(const Model &) = delete;
 
@@ -73,27 +72,27 @@ public:
 
     Model &operator=(Model &&) = delete;
 
-    static shared_ptr<Model> &getModelInstance();
+    const deque<shared_ptr<SimObject>> &getSimObjects() const;
 
-    ~Model();
+    const deque<shared_ptr<Agent>> &getAgents() const;
+
+    const deque<shared_ptr<Structure>> &getStructures() const;
 
     unsigned int getTime() const;
+
+    void initCastles(const char *castlesFileName);
+
+    void initFarms(const char *farmsFileName);
 
     void status();
 
     void go();
 
-    void show();
+    void createKnight(const string &name, const string &structureName);
 
-    void setDefaultView();
+    void createPeasant(const string &name, float x, float y);
 
-    void setSizeView(int newSize);
-
-    void setZoomView(float newZoom);
-
-    void setPanView(float newX, float newY);
-
-    void create(std::string input); // only for Agents
+    void createThug(const string &name, float x, float y);
 
     void setCourseAgent(const string &agentName, float course, float speed = 0);
 
@@ -107,10 +106,9 @@ public:
 
     void start_working(const string &peasantName, const string &castle, const string &farm);
 
+    void attachedView(shared_ptr<View> &view);
 
-    shared_ptr<Agent> &getAgent(const string &name);
-
-    shared_ptr<Structure> &getStructure(const string &name);
+    void detachesView();
 
     /**
      * exception classes

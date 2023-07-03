@@ -32,12 +32,15 @@ bool Thug::attack() {
         if (!p) {
             throw Model::InputDataException("Peasant dynamic cast problem in Thug::attack\n");
         }
-        if (health < p->getHealth()) {
+        if (health < p->getHealth() || thisIsAKnight) {
             p->wasAttacked(true);
+            cout << name << "'s attack succeeded!" << endl;
         } else {
             p->wasAttacked(false);
+            cout << name << "'s attack failed!" << endl;
         }
         peasantToAttack = nullptr;
+        thisIsAKnight = false;
     }
 }
 
@@ -50,6 +53,7 @@ void Thug::update() {
     attack();
 }
 
-void Thug::srtPeasantToAttack(shared_ptr<Agent>& peasant) {
+void Thug::setPeasantToAttack(shared_ptr<Agent>& peasant, bool KnightIsClosed) {
     peasantToAttack = peasant;
+    thisIsAKnight = true;
 }

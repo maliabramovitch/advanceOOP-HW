@@ -107,6 +107,7 @@ void Knight::setCourse(float newCourse) {
 
 void Knight::broadcastCurrentState() const {
     std::cout << "Knight ";
+    //cout << " distance from next pos " << getDistanceFromDestination() << " ";
     Agent::broadcastCurrentState();
     if (movement == DESTINATION && !stopped) {
         cout << "Heading to " << nextDestination->getName() << ", speed 10.00 km/h" << endl;
@@ -118,10 +119,15 @@ void Knight::update() {
     if (movement == DESTINATION) {
         if (moving && currentX == newX && currentY == newY) { // reached to the next destination
             currentDestination = nextDestination;
-            ridingMap.erase(std::find(ridingMap.begin(), ridingMap.end(), currentDestination));
+            if (!ridingMap.empty()) {
+                ridingMap.erase(std::find(ridingMap.begin(), ridingMap.end(), currentDestination));
+                justArrived = true;
+            }
             if (ridingMap.empty()) {// finished the patrol
+                cout << getName() << " complete The Patrol!" << endl;
                 stopped = true;
                 moving = false;
+                movement = STOPPED;
             } else {
                 if (ridingMap.size() == 1) {
                     if (ridingMap.front() !=
@@ -130,15 +136,16 @@ void Knight::update() {
                     }
                     nextDestination = ridingMap.front();
                     MovingObject::setNewPosition(nextDestination->getX(), nextDestination->getY(), speed);
+                    movement = DESTINATION;
                 } else {
                     float mostClosed = MAXFLOAT;
                     for (shared_ptr<Structure> &dest: ridingMap) {
-                        float tmpDistance = MovingObject::calculateDistance(currentX, currentY, dest->getX(),
-                                                                            dest->getY());
+                        float tmpDistance = MovingObject::calculateDistance(currentX, currentY, dest->getX(), dest->getY());
                         if (tmpDistance < mostClosed) {
                             MovingObject::setNewPosition(dest->getX(), dest->getY(), speed);
                             nextDestination = dest;
                             mostClosed = tmpDistance;
+                            movement = DESTINATION;
                         }
                     }
                 }
@@ -147,8 +154,11 @@ void Knight::update() {
     }
 }
 
-void Knight::doMove(float speed) {
-    MovingObject::doMove(speed);
+void Knight::doMove() {
+    if (!justArrived) {
+        MovingObject::doMove();
+    }
+    justArrived = false;
 }
 
 

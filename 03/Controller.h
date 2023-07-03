@@ -10,40 +10,43 @@
 #include "Model.h"
 
 class Controller {
+    deque<string> args;
+    shared_ptr<View> view;
+    static shared_ptr<Model> model;
 
-    Controller() = default;
+    Controller();
 
     static shared_ptr<Controller> instancePtr; //singleton instancePtr
 
-    static void goHelper(string& input);
+    static void goHelper(string &input);
 
-    static void statusHelper(string& input);
+    static void statusHelper(string &input);
 
-    static void showHelper(string& input);
+    void showHelper(string &input);
 
-    static void defaultHelper(string& input);
+    void defaultHelper(string &input);
 
-    static void sizeHelper(string &input); // 6 < s <= 30
+    void sizeHelper(string &input); // 6 < s <= 30
 
-    static void zoomHelper(string &input);
+    void zoomHelper(string &input);
 
-    static void panHelper(string &input);
+    void panHelper(string &input);
 
-    static void createHelper(const string &input);
+    void createHelper(const string &input);
 
-    static void courseHelper(string &input);
+    void courseHelper(string &input);
 
-    static void positionHelper(string &input);
+    void positionHelper(string &input);
 
-    static void destinationHelper(string &input);
+    void destinationHelper(string &input);
 
-    static void stopHelper(string &input);
+    void stopHelper(string &input);
 
-    static void attackHelper(string &input);
+    void attackHelper(string &input);
 
-    static void start_workingHelper(string &input);
+    void start_workingHelper(string &input);
 
-
+    void split(const string& input);
 
 public:
 
@@ -59,7 +62,7 @@ public:
 
     ~Controller();
 
-    static void run();
+    void run(bool checkMode);
 
     class ControllerException : public exception {
         string mess;

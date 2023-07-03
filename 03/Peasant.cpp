@@ -7,7 +7,7 @@
 /**
  * Work
  */
-Peasant::Work::Work(shared_ptr<Structure> f, shared_ptr<Structure> c) : farm(std::move(f)), castle(std::move(c)) {}
+Peasant::Work::Work(const shared_ptr<Structure> &f, const shared_ptr<Structure> &c) : farm(f), castle(c) {}
 
 Peasant::Work::~Work() {
     farm.reset();
@@ -63,7 +63,6 @@ Peasant &Peasant::operator=(Peasant &&lhs) noexcept {
 void Peasant::loadBoxes(int boxes) {
     working = true;
     boxesCarrying = boxes;
-    ++workingCircle;
 }
 
 int Peasant::unloadBoxes() {
@@ -82,7 +81,7 @@ void Peasant::broadcastCurrentState() const {
                 break;
             }
             case 1: {
-                cout << "Loading Boxes at " << tasks.front()->farm->getName() << ", speed 5.00 km/h" << endl;
+                cout << "Loading Boxes at " << tasks.front()->farm->getName() << endl;
                 break;
             }
             case 2: {
@@ -90,7 +89,7 @@ void Peasant::broadcastCurrentState() const {
                 break;
             }
             case 3: {
-                cout << "Unloading Boxes at " << tasks.front()->castle->getName() << ", speed 5.00 km/h" << endl;
+                cout << "Unloading Boxes at " << tasks.front()->castle->getName() << endl;
                 break;
             }
 
@@ -106,15 +105,16 @@ void Peasant::update() {
                 MovingObject::setNewPosition(task->farm->getX(), task->farm->getY(), speed);
                 movement = DESTINATION;
                 working = true;
-            }
+            } else { return; }
         } else {
             auto &task = tasks.front();
             if (workingCircle == WALKING_TO_THE_FARM && currentX == task->farm->getX() &&
                 currentY == task->farm->getY()) {
                 ++workingCircle;
+                justFinishedWalking = true;
             } else if (workingCircle == LOADING_BOXES_IN_THE_FARM) {
-                ++workingCircle;
                 loadBoxes(task->farm->withdraw());
+                ++workingCircle;
                 setNewPosition(task->castle->getX(), task->castle->getY(), speed);
                 movement = DESTINATION;
             } else if (workingCircle == WALKING_TO_THE_CASTLE && currentX == task->castle->getX() &&
@@ -123,62 +123,23 @@ void Peasant::update() {
                 task->castle->deposit(unloadBoxes());
             } else if (workingCircle == UNLOADING_BOXES_IN_THE_CASTLE) {
                 workingCircle = 0;
-                if (!tasks.empty()) {
-                    tasks.pop_front();
-                }
+                tasks.pop_front();
                 working = false;
-                stopped = true;
+                if (tasks.empty()) {
+                    stopped = true;
+                }
+                movement = STOPPED;
             }
         }
     }
-/* if (isAlive) {
-     if (!tasks->empty()) {
-         auto &task = tasks->front();
-         if (workingCircle == 0) {
-             if (stopped) {
-                 setNewPosition(task.farm.lock()->getX(), task.farm.lock()->getY(), speed);
-                 working = false;
-             }
-             if (!stopped) {
-                 MovingObject::doMove(speed);
-             } else {
-                 ++workingCircle;
-                 return;
-             }
-             if (workingCircle == 1) {
-                 if (!working) {
-                     int boxes =
-                             task.farm.lock()->getBoxesInStorage() > 5 ? 5 : task.farm.lock()->getBoxesInStorage();
-                     loadBoxes(boxes);
-                     working = true;
-                     ++workingCircle;
-                 }
-                 if (workingCircle == 2) {
-                     if (working) {
-                         setNewPosition(task.castle.lock()->getX(), task.castle.lock()->getY(), speed);
-                         working = false;
-                     }
-                     if (!stopped) {
-                         MovingObject::doMove(speed);
-                     } else {
-                         ++workingCircle;
-                     }
-                 }
-                 if (workingCircle == 3) {
-                     task.castle.lock()->deposit(unloadBoxes());
-                     resetWorkingCircle();
-                     tasks.pop_front();
-                     if (health < 20) ++health;
-                 }
-             }
-         }
-     }
- }*/
 }
 
-void Peasant::doMove(float newSpeed) {
+void Peasant::doMove() {
     if (isAlive && (workingCircle == WALKING_TO_THE_FARM || workingCircle == WALKING_TO_THE_CASTLE)) {
-        MovingObject::doMove(newSpeed);
+        MovingObject::doMove();
+        if (getDistanceFromDestination() != 0) {
+            justFinishedWalking = true;
+        }
     }
 }
 
@@ -186,6 +147,11 @@ void Peasant::addTask(const std::shared_ptr<Structure> &farm, const std::shared_
     if (isAlive) {
         tasks.push_back(make_shared<Work>(farm, castle));
         stopped = false;
+        if (!working) {
+            MovingObject::setNewPosition(farm->getX(), farm->getY(), speed);
+            movement = DESTINATION;
+            working = true;
+        }
     }
 }
 

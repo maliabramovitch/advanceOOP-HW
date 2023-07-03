@@ -113,7 +113,6 @@ public:
         newX = x;
         newY = y;
         speed = s;
-        //position = true;
         stopped = false;
         movement = POSITION;
     }
@@ -131,7 +130,6 @@ public:
     void setCourse(float newCourse, float newSpeed) {
         course = newCourse;
         speed = newSpeed;
-        //position = false;
         stopped = false;
         movement = COURSE;
     }
@@ -139,69 +137,48 @@ public:
     static float finedDeg(float x1, float y1, float x2, float y2) {
         float prod = x1 * x2 + y1 * y2;
         float mag = sqrt((float) (pow((x1), 2) + pow(y1, 2))) * sqrt((float) (pow((x2), 2) + pow(y2, 2)));
-        return acos(prod / mag);
+        return atan2(y1 - y2, x1 - x2);
     }
 
-    virtual void doMove(float newSpeed) {
+    virtual void doMove() {
         if (!stopped) {
             Cartesian_vector cv;
             if (movement == POSITION || movement == DESTINATION) {
                 if (distanceFromPosition == 0) {
                     calculateDistanceFromPosition();
                 }
-                /*              if ((newX > currentX) && (newY > currentY)) {
-                                  cout << "1. (newX > currentX) && (newY > currentY)" << endl;
-                                  cv.delta_x = newX - currentX;
-                                  cv.delta_y = newY - currentY;
-                              } else if ((newX < currentX) && (newY < currentY)) {
-                                  cout << "2. (newX < currentX) && (newY < currentY)" << endl;
-                                  cv.delta_x = currentX - newX;
-                                  cv.delta_y = currentY - newY;
-                              } else if ((newX > currentX) && (newY < currentY)) {
-                                  cout << "3. (newX > currentX) && (newY < currentY)" << endl;
-                                  cv.delta_x = newX - currentX;
-                                  cv.delta_y = newY - currentY;
-                              } else { // (newX < currentX) && (newY > currentY)
-                                  cout << "4. (newX < currentX) && (newY > currentY)" << endl;
-                                  cv.delta_x = newX - currentX;
-                                  cv.delta_y = currentY - newY;
-                              }*/
                 if (distanceFromPosition > 0) {
                     cv.delta_y = (newY - currentY);
                     cv.delta_x = (newX - currentX);
                     Polar_vector pv;
-                    course = (float) to_degrees(finedDeg(cv.delta_x, cv.delta_y, 0, 1));
+                    course = (float) to_degrees(finedDeg(newX, newY, currentX, currentY));
                     pv.theta = to_radians(course);
                     pv.r = speed;
                     cv = Cartesian_vector(pv);
-                    distanceFromPosition -= speed;
+                    distanceFromPosition -= (speed / 10);
                     if (distanceFromPosition <= 0) {
                         distanceFromPosition = 0;
                         currentX = newX;
                         currentY = newY;
                         return;
+                    } else {
                     }
                 }
+                currentX += (float) (cv.delta_x) / 10;
+                currentY += (float) (cv.delta_y) / 10;
             } else {
                 Polar_vector pv;
                 pv.r = speed;
                 pv.theta = to_radians(course);
                 cv = Cartesian_vector(pv);
+
+                currentX += (float) (cv.delta_y) / 10;
+                currentY += (float) (cv.delta_x) / 10;
             }
-/*            if ((course >= 90 && course < 180) || (course >= 270 && course < 360)) { // II, IV
-                currentX += (float) (cv.delta_y) / 10;
-                currentY += (float) (cv.delta_x) / 10;
-            } else if ((course >= 0 && course < 90) || (course >= 180 && course < 270)) {// I ,III
-                currentX += (float) (cv.delta_y) / 10;
-                currentY += (float) (cv.delta_x) / 10;
-            }*/
-            currentX += (float) (cv.delta_y) / 10;
-            currentY += (float) (cv.delta_x) / 10;
         }
     }
 
     static float calculateDistance(float x1, float y1, float x2, float y2) {
-        Point p1(x1, y1), p2(x2, y2);
-        return sqrt((pow((p1.x - p2.x), 2) + pow((p1.y - p2.y), 2)));
+        return (float) std::sqrt((std::pow((x1 - x2), 2) + std::pow((y1 - y2), 2)));
     }
 };
