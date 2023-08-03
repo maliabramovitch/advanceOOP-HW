@@ -33,9 +33,18 @@ Controller::~Controller() {
 }
 
 void Controller::run(bool checkMode) {
-    if (checkMode) {
+    if (checkMode) { ///TODO
+        // all output goes to file output.dat
         fstream infile("input.dat");
+        if (!infile) {
+            cout << "infile" << endl;
+            return;
+        }
         fstream outfile("output.txt", ios::out);
+        if (!outfile) {
+            cout << "outfile" << endl;
+            return;
+        }
         std::streambuf *oldCoutBuffer = std::cout.rdbuf();
         std::cout.rdbuf(outfile.rdbuf());
         cout << "Welcome friend to SimMedieval!" << endl;
@@ -54,20 +63,20 @@ void Controller::run(bool checkMode) {
                 "View Commands:\n"
                 "\t1.  default\n"
                 "\t2.  size <SIZE>\n"
-                "\t3.  zoom <<FLOAT > 0>\n"
+                "\t3.  zoom <FLOAT.00>\n"
                 "\t4.  pan <FLOAT.00> <FLOAT.00>\n"
                 "\t5.  show\n";
         while (true) {
             try {
                 stringstream ss;
-                cout << "Time: " << Model::getModelInstance()->getTime() << " Enter input: ";
+                cout << "Time: " << Model::getModelInstance()->getTime() << " Enter command: ";
                 string input;
                 getline(infile, input);
                 cout << input;
                 input.pop_back();
                 /// Commands
                 if (input.find("exit") != string::npos) {
-                    cout << "Farewell -> Goodbye." << endl;
+                    cout << "\nFarewell -> Goodbye." << endl;
                     break;
                 }
                 if (input.find("go") != string::npos) {
@@ -108,15 +117,10 @@ void Controller::run(bool checkMode) {
             }
             cin.clear();
             cout << endl;
-
         }
         std::cout.rdbuf(oldCoutBuffer);
         outfile.close();
-    } /*else {
-        fstream infile("input.dat");
-        fstream outfile("output.dat", ios::app);
-        std::streambuf *oldCoutBuffer = std::cout.rdbuf();
-        std::cout.rdbuf(outfile.rdbuf());
+    } else {
         cout << "Welcome friend to SimMedieval!" << endl;
         cout << "Commands:\n"
                 "\t1.  go\n"
@@ -139,21 +143,13 @@ void Controller::run(bool checkMode) {
         while (true) {
             try {
                 stringstream ss;
-                cout << "Time: " << Model::getModelInstance()->getTime() << " Enter input: ";
+                cout << "Time: " << Model::getModelInstance()->getTime() << " Enter command: ";
                 string input;
                 getline(std::cin, input);
                 ss.clear();
                 ss << input;
-                if (!infile) {
-                    input = "exit";
-                } else {
-                    getline(infile, input);
-                    input.pop_back();
-                    cout << input << endl;
-                }
-                /// Commands
-                if (input.find("exit") != string::npos) {
-                    cout << "Farewell -> Goodbye." << endl;
+                if (input == "exit") {
+                    cout << "\nFarewell -> Goodbye." << endl;
                     break;
                 }
                 if (input.find("go") != string::npos) {
@@ -195,7 +191,7 @@ void Controller::run(bool checkMode) {
             cin.clear();
             cout << endl;
         }
-    }*/
+    }
 }
 
 void Controller::goHelper(string &input) {
@@ -204,7 +200,7 @@ void Controller::goHelper(string &input) {
     ss >> input;
     if (input != "go" || !ss.eof()) {
         ss.clear();
-        ss << "oppsi poosi... illegal go command " << input << endl;
+        ss << "oppsi poosi... illegal go command: " << input << endl;
         throw ControllerException(ss.str());
     }
     model->go();
@@ -216,7 +212,7 @@ void Controller::statusHelper(string &input) {
     ss >> input;
     if (input != "status" || !ss.eof()) {
         ss.clear();
-        ss << "oppsi poosi... illegal status command " << input << endl;
+        ss << "oppsi poosi... illegal status command: " << input << endl;
         throw ControllerException(ss.str());
     }
     model->status();
@@ -228,9 +224,10 @@ void Controller::showHelper(string &input) {
     ss >> input;
     if (input != "show" || !ss.eof()) {
         ss.clear();
-        ss << "oppsi poosi... illegal show command " << input << endl;
+        ss << "oppsi poosi... illegal show command: " << input << endl;
         throw ControllerException(ss.str());
     }
+    cout << endl;
     view->show();
 }
 
@@ -240,7 +237,7 @@ void Controller::defaultHelper(string &input) {
     ss >> input;
     if (input != "default" || !ss.eof()) {
         ss.clear();
-        ss << "oppsi poosi... illegal default command " << input << endl;
+        ss << "oppsi poosi... illegal default command: " << input << endl;
         throw ControllerException(ss.str());
     }
     view->default_view();
@@ -249,21 +246,21 @@ void Controller::defaultHelper(string &input) {
 void Controller::sizeHelper(string &input) {
     try {
         stringstream ss;
-        int size;
+        int sizeInt = 0;
         split(input);
         if (args.size() != 2 || args[0] != "size") {
             ss.clear();
-            ss << "oppsi poosi... illegal size command " << input << endl;
+            ss << "oppsi poosi... illegal size command: " << input << endl;
             throw ControllerException(ss.str());
         }
         ss << args[1];
-        ss >> size;
-        if (!ss) {
+        ss >> sizeInt;
+        if (!ss || !ss.eof()) {
             ss.clear();
-            ss << "oppsi poosi... illegal size command " << input << endl;
+            ss << "oppsi poosi... illegal size command: " << input << endl;
             throw ControllerException(ss.str());
         }
-        view->adjustSize(size);
+        view->adjustSize(sizeInt);
     }
     catch (exception &e) {
         throw;
@@ -276,7 +273,7 @@ void Controller::zoomHelper(string &input) {
         split(input);
         if (args.size() != 2 || args[0] != "zoom") {
             ss.clear();
-            ss << "oppsi poosi... illegal zoom command " << input << endl;
+            ss << "oppsi poosi... illegal zoom command: " << input << endl;
             throw ControllerException(ss.str());
         }
         float zoom;
@@ -284,7 +281,7 @@ void Controller::zoomHelper(string &input) {
         ss >> zoom;
         if (!ss) {
             ss.clear();
-            ss << "oppsi poosi... illegal zoom command " << input << endl;
+            ss << "oppsi poosi... illegal zoom command: " << input << endl;
             throw ControllerException(ss.str());
         }
         view->adjustZoom(zoom);
@@ -298,11 +295,16 @@ void Controller::panHelper(string &input) {
     stringstream ss;
     float x, y;
     split(input);
+    if (args[0] != "pan" || args.size() != 3) {
+        ss.clear();
+        ss << "oppsi poosi... illegal pan command: " << input << endl;
+        throw ControllerException(ss.str());
+    }
     ss << args[1] << " " << args[2];
     ss >> x >> y;
     if (!ss || !ss.eof()) {
         ss.clear();
-        ss << "oppsi poosi... illegal pan command " << input << endl;
+        ss << "oppsi poosi... illegal pan command: " << input << endl;
         throw ControllerException(ss.str());
     }
     view->adjustPan(x, y);
@@ -313,31 +315,24 @@ void Controller::createHelper(const string &input) {
         stringstream ss;
         split(input);
         if (args[0] != "create") {
-            if (!ss) {
-                ss.clear();
-                ss << "oppsi poosi... illegal create command " << input << endl;
-                throw ControllerException(ss.str());
-            }
+            ss.clear();
+            ss << "oppsi poosi... illegal create command: " << input << endl;
+            throw ControllerException(ss.str());
         }
         if (args[2] == "Knight" && args.size() == 4) {
-//            ss.clear();
-//            ss << "illegal create command" << input << endl;
-//            throw ControllerException(ss.str());
             model->createKnight(args[1], args[3]);
         } else {
             if (args.size() != 5) {
-                if (!ss) {
-                    ss.clear();
-                    ss << "oppsi poosi... illegal create command " << input << endl;
-                    throw ControllerException(ss.str());
-                }
+                ss.clear();
+                ss << "oppsi poosi... illegal create command: " << input << endl;
+                throw ControllerException(ss.str());
             }
             ss.clear();
             float x, y;
             ss << args[3] << " " << args[4];
             ss >> x >> y;
             if (!ss) {
-                ss << "oppsi poosi... illegal create command " << input << endl;
+                ss << "oppsi poosi... illegal create command: " << input << endl;
                 throw ControllerException(ss.str());
             }
             if (args[2] == "Peasant") {
@@ -345,7 +340,7 @@ void Controller::createHelper(const string &input) {
             } else if (args[2] == "Thug") {
                 model->createThug(args[1], x, y);
             } else {
-                ss << "oppsi poosi... illegal create command" << input << endl;
+                ss << "oppsi poosi... illegal create command: " << input << endl;
                 throw ControllerException(ss.str());
             }
         }
@@ -361,7 +356,7 @@ void Controller::courseHelper(string &input) {
         split(input);
         if (args[1] != "course") {
             ss.clear();
-            ss << "oppsi poosi... illegal course command " << input << endl;
+            ss << "oppsi poosi... illegal course command: " << input << endl;
             throw ControllerException(ss.str());
         }
         ss.clear();
@@ -370,13 +365,13 @@ void Controller::courseHelper(string &input) {
         ss >> course;
         if (!ss) {
             ss.clear();
-            ss << "oppsi poosi... illegal course command " << input << endl;
+            ss << "oppsi poosi... illegal course command: " << input << endl;
             throw ControllerException(ss.str());
         }
         if (args.size() == 3) {
             if (!ss.eof()) {
                 ss.clear();
-                ss << "oppsi poosi... illegal course command " << input << endl;
+                ss << "oppsi poosi... illegal course command: " << input << endl;
                 throw ControllerException(ss.str());
             }
             model->setCourseAgent(args[0], course);
@@ -387,7 +382,7 @@ void Controller::courseHelper(string &input) {
             ss >> speed;
             if (!ss || args.size() != 4) {
                 ss.clear();
-                ss << "oppsi poosi... illegal course command " << input << endl;
+                ss << "oppsi poosi... illegal course command: " << input << endl;
                 throw ControllerException(ss.str());
             }
             model->setCourseAgent(args[0], course, speed);
@@ -403,26 +398,27 @@ void Controller::positionHelper(string &input) {
         split(input);
         if (args[1] != "position") {
             ss.clear();
-            ss << "oppsi poosi... illegal position command " << input << endl;
+            ss << "oppsi poosi... illegal position command: " << input << endl;
             throw ControllerException(ss.str());
         }
         float x, y;
         ss << args[2] << " " << args[3];
         if (!ss) {
             ss.clear();
-            ss << "oppsi poosi... illegal position command " << input << endl;
+            ss << "oppsi poosi... illegal position command: " << input << endl;
             throw ControllerException(ss.str());
         }
+        ss >> x >> y;
         if (args.size() == 4) {
-            model->setCourseAgent(args[0], x, y);
+            model->setPositionAgent(args[0], x, y);
         } else {
             ss.clear();
             float speed;
             ss << args[4];
             ss >> speed;
-            if (!ss || speed < 0) {
+            if (!ss || speed < 0 || args.size() != 5) {
                 ss.clear();
-                ss << "oppsi poosi... illegal position command " << input << endl;
+                ss << "oppsi poosi... illegal position command: " << input << endl;
                 throw ControllerException(ss.str());
             }
             model->setPositionAgent(args[0], x, y, speed);
@@ -439,7 +435,7 @@ void Controller::destinationHelper(string &input) {
         split(input);
         if (args[1] != "destination" || args.size() != 3) {
             ss.clear();
-            ss << "oppsi poosi... illegal destination command " << input << endl;
+            ss << "oppsi poosi... illegal destination command: " << input << endl;
             throw ControllerException(ss.str());
         }
         model->setDestinationAgent(args[0], args[2]);
@@ -458,9 +454,6 @@ void Controller::stopHelper(string &input) {
             ss << "oppsi poosi... illegal stop command " << input << endl;
             throw ControllerException(ss.str());
         }
-        for (auto &a: args) {
-            cout << a << endl;
-        }
         model->stopAgent(args[0]);
     }
     catch (exception &e) {
@@ -474,11 +467,8 @@ void Controller::attackHelper(string &input) {
         split(input);
         if (args.size() != 3 || args[1] != "attack") {
             ss.clear();
-            ss << "oppsi poosi... illegal attack command " << input << endl;
+            ss << "oppsi poosi... illegal attack command: " << input << endl;
             throw ControllerException(ss.str());
-        }
-        for (auto &a: args) {
-            cout << a << endl;
         }
         model->attack(args[0], args[2]);
     }
@@ -493,7 +483,7 @@ void Controller::start_workingHelper(string &input) {
         split(input);
         if (args.size() != 4 || args[1] != "start_working") {
             ss.clear();
-            ss << "oppsi poosi... illegal start_working command " << input << endl;
+            ss << "oppsi poosi... illegal start_working command: " << input << endl;
             throw ControllerException(ss.str());
         }
         model->start_working(args[0], args[3], args[2]);

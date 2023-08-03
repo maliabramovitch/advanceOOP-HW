@@ -56,6 +56,7 @@ public:
             lhs.y = 0;
             lhs.boxesInStorage = 0;
         }
+        return *this;
     }
 
     ~Structure() = default;

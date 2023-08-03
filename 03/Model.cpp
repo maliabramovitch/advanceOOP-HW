@@ -13,7 +13,7 @@ Model::Model() {
 
 void Model::checkFarm(const string &fileName) {
     stringstream ssExcept;
-    ssExcept << "oppsi poosi... input illegal in file: " << fileName << endl;
+    ssExcept << "oppsi poosi... illegal input in file: " << fileName << endl;
     string arg;
     if (args.size() != 5) {
         throw (InputDataException(ssExcept.str()));
@@ -125,14 +125,14 @@ shared_ptr<Agent> &Model::getAgent(const string &name) {
         if (agent->getName() == name) {
             if (!agent->getIsAlive()) {
                 stringstream ss;
-                ss << agent->getName() << " is dead" << endl;
+                ss << agent->getName() << " is dead " << endl;
                 throw InputDataException(ss.str());
             }
             return agent;
         }
     }
     stringstream ss;
-    ss << "Agent " << name << " don't exist" << endl;
+    ss << "Agent " << name << " doesn't exist" << endl;
     throw InputDataException(ss.str());
 }
 
@@ -143,7 +143,7 @@ shared_ptr<Structure> &Model::getStructure(const string &name) {
         }
     }
     stringstream ss;
-    ss << "Structure " << name << " don't exist" << endl;
+    ss << "Structure " << name << " doesn't exist" << endl;
     throw InputDataException(ss.str());
 }
 
@@ -262,7 +262,7 @@ void Model::initCastles(const char *castlesFileName) {
 }
 
 void Model::status() {
-    cout << '\n';
+    cout << '\n' << endl;
     for (const shared_ptr<SimObject> &simObj: simObjects) {
         simObj->broadcastCurrentState();
     }
@@ -282,7 +282,7 @@ void Model::go() {
 void Model::createKnight(const string &agentName, const string &structureName) {
     if (isAgentExist(agentName)) {
         stringstream ss;
-        ss << "Agent" << agentName << " already exist" << endl;
+        ss << "Agent " << agentName << " already exist" << endl;
         throw AgentAlreadyExistException(ss.str());
     }
     auto structure = getStructure(structureName);
@@ -305,7 +305,7 @@ void Model::createPeasant(const string &agentName, float x, float y) {
 void Model::createThug(const string &agentName, float x, float y) {
     if (isAgentExist(agentName)) {
         stringstream ss;
-        ss << "Agent" << agentName << " already exist" << endl;
+        ss << "Agent " << agentName << " already exist" << endl;
         throw AgentAlreadyExistException(ss.str());
     }
     shared_ptr<Thug> thug = make_shared<Thug>(agentName, x, y);
@@ -325,7 +325,7 @@ void Model::setCourseAgent(const string &agentName, float course, float speed) {
             auto thug = dynamic_pointer_cast<Thug>(agent);
             if (!thug) {
                 stringstream ss;
-                ss << "set course for " << agent->getName() << " dynamic cast" << speed << endl;
+                ss << "set course for " << agent->getName() << " dynamic cast" << endl;
                 throw InputDataException(ss.str());
             }
             thug->setCourse(course, speed);
@@ -333,7 +333,7 @@ void Model::setCourseAgent(const string &agentName, float course, float speed) {
             auto knight = dynamic_pointer_cast<Knight>(agent);
             if (!knight) {
                 stringstream ss;
-                ss << "set course for " << agent->getName() << " role " << agent->getRole() << endl;
+                ss << "set course for " << agent->getName() << " dynamic cast"<< endl;
                 throw InputDataException(ss.str());
             }
             knight->setCourse(course);
@@ -369,7 +369,7 @@ void Model::setPositionAgent(const string &agentName, float newX, float newY, fl
             auto knight = dynamic_pointer_cast<Knight>(agent);
             if (!knight) {
                 stringstream ss;
-                ss << "set position for " << agent->getName() << "role" << agent->getRole() << endl;
+                ss << "set position for " << agent->getName() << " dynamic cast"<< endl;
                 throw InputDataException(ss.str());
             }
             knight->setPosition(newX, newY);
@@ -393,7 +393,7 @@ void Model::setDestinationAgent(const string &agentName, const string &newDest) 
             auto knight = dynamic_pointer_cast<Knight>(agent);
             if (!knight) {
                 stringstream ss;
-                ss << "set destination for " << agent->getName() << "dynamic cast " << agent->getRole()
+                ss << "set destination for " << agent->getName() << " dynamic cast " << agent->getRole()
                    << endl;
                 throw InputDataException(ss.str());
             }
@@ -431,12 +431,13 @@ void Model::attack(const string &thugName, const string &peasantName) {
         }
         auto thug = dynamic_pointer_cast<Thug>(thugAgent);
         if (!thug) {
-            throw InputDataException("dynamic cast problem in Model::attack\n");
+            throw InputDataException("Thug dynamic cast problem in Model::attack\n");
         }
         for (auto &agent: agents) {
             if (agent->getRole() == 'K') {
-                if (MovingObject::calculateDistance(agent->getCurrentX(), agent->getCurrentY(),
-                                                    peasantAgent->getCurrentX(), peasantAgent->getCurrentY()) <= 2.5) {
+                float distance = MovingObject::calculateDistance(agent->getCurrentX(), agent->getCurrentY(),
+                                                                 peasantAgent->getCurrentX(), peasantAgent->getCurrentY());
+                if (distance <= 2.5) {
                     thug->setPeasantToAttack(peasantAgent, true);
                     return;
                 }
@@ -453,7 +454,7 @@ void Model::start_working(const string &peasantName, const string &castleName, c
         auto agent = getAgent(peasantName);
         if (agent->getRole() != 'P') {
             stringstream ss;
-            ss << "start_working for " << agent->getName() << "is illegal" << endl;
+            ss << "start_working for " << agent->getName() << " is illegal" << endl;
             throw InputDataException(ss.str());
         }
         auto castle = getStructure(castleName);
@@ -461,7 +462,7 @@ void Model::start_working(const string &peasantName, const string &castleName, c
         auto peasant = dynamic_pointer_cast<Peasant>(agent);
         if (!peasant) {
             stringstream ss;
-            ss << "start_working for " << agent->getName() << "dynamic cast" << endl;
+            ss << "start_working for " << agent->getName() << " dynamic cast" << endl;
             throw InputDataException(ss.str());
         }
         peasant->addTask(farm, castle);

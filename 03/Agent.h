@@ -92,7 +92,7 @@ public:
             cout << "speed " << speed << " km/h" << endl;
 
         } else if (movement == COURSE){
-            cout << "Heading on course " << course << " deg, speed 10.00 km/h" << endl;
+            cout << "Heading on course " << course << " deg, speed " << speed << " km/h" << endl;
         }
     }
 

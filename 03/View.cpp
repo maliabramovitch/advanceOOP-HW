@@ -24,7 +24,7 @@ void View::adjustSize(int newSize) {
 void View::adjustZoom(float newZoom) {
     if (newZoom < 0) {
         stringstream ss;
-        ss << "oppsi poosi... Zoom: " << newZoom << " illegal, (Zoom > 0)" << endl;
+        ss << "oppsi poosi... Zoom: " << newZoom << " is illegal, (Zoom > 0)" << endl;
         throw ViewException(ss.str());
     }
     zoom = newZoom;
